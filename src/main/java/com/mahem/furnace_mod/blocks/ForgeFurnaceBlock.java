@@ -1,6 +1,5 @@
 package com.mahem.furnace_mod.blocks;
 
-import com.mahem.furnace_mod.AbstractHeat;
 import com.mahem.furnace_mod.mod_types.ModBlockEntityType;
 import com.mahem.furnace_mod.block_entities.ForgeFurnaceBlockEntity;
 import com.mojang.serialization.MapCodec;
@@ -18,7 +17,7 @@ import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
     public static final MapCodec<com.mahem.furnace_mod.blocks.ForgeFurnaceBlock> CODEC = simpleCodec(com.mahem.furnace_mod.blocks.ForgeFurnaceBlock::new);
@@ -33,17 +32,19 @@ public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
     }
 
     @Override
-    public BlockEntity newBlockEntity(BlockPos worldPosition, BlockState blockState) {
-        return new ForgeFurnaceBlockEntity(worldPosition, blockState);
+    public BlockEntity newBlockEntity(@NonNull BlockPos worldPosition, @NonNull BlockState blockState) {
+        return new ForgeFurnaceBlockEntity(worldPosition, blockState); // Should be always non-null?
     }
 
     @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState blockState, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) {
             return null;
         }
-
-        return createFurnaceTicker(level, type, ModBlockEntityType.FORGE_FURNACE_ENTITY.get());
+        if (type == ModBlockEntityType.FORGE_FURNACE_ENTITY.get()) {
+            return (BlockEntityTicker<T>) (level1, pos, state1, blockEntity) -> ForgeFurnaceBlockEntity.tick(level1, pos, state1, (ForgeFurnaceBlockEntity) blockEntity);
+        }
+        return null;
     }
 
     @Override

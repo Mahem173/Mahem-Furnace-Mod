@@ -52,5 +52,6 @@
   "furnace_mod.configuration.items": "Item List",
   "furnace_mod.configuration.logDirtBlock": "Log Dirt Block",
   "furnace_mod.configuration.magicNumberIntroduction": "Magic Number Text",
-  "furnace_mod.configuration.magicNumber": "Magic Number"
+  "furnace_mod.configuration.magicNumber": "Magic Number",
+  "creativetab.furnace_mod.forge_furnace_items": "Furnace Mod Items"
 }

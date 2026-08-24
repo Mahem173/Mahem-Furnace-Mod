@@ -2,6 +2,7 @@ package com.mahem.furnace_mod.menus;
 
 import com.mahem.furnace_mod.mod_types.ModMenuType;
 import com.mahem.furnace_mod.mod_types.ModRecipeType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;

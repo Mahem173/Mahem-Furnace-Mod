@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import java.util.function.Supplier;
 
 import static com.mahem.furnace_mod.ModBlockTypes.FORGE_FURNACE;
+import static com.mahem.furnace_mod.ModBlockTypes.REFINED_FURNACE;
 
 
 public class ModBlockEntityType extends BlockEntityTypes {
@@ -23,7 +24,6 @@ public class ModBlockEntityType extends BlockEntityTypes {
                             ForgeFurnaceBlockEntity::new,
                             false,
                             FORGE_FURNACE.get()));
-
 
 
 

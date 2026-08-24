@@ -10,6 +10,10 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModRecipeType {
+
+    public static final RecipeBookCategory FORGE_FURNACE_CATEGORY =
+            new RecipeBookCategory();
+
     public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES =
             DeferredRegister.create(Registries.RECIPE_TYPE, "furnace_mod");
 

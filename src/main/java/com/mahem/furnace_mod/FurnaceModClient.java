@@ -1,6 +1,8 @@
 package com.mahem.furnace_mod;
 
 import com.mahem.furnace_mod.FurnaceMod;
+import com.mahem.furnace_mod.client.screens.ForgeFurnaceScreen;
+import com.mahem.furnace_mod.mod_types.ModMenuType;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -8,6 +10,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -28,5 +31,12 @@ public class FurnaceModClient {
         // Some client setup code
         FurnaceMod.LOGGER.info("HELLO FROM CLIENT SETUP");
         FurnaceMod.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+    }
+
+    @SubscribeEvent
+    public static void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuType.FORGE_FURNACE_MENU.get(), ForgeFurnaceScreen::new);
+
+
     }
 }
