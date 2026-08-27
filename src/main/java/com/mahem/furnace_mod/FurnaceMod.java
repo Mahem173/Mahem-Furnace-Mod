@@ -2,15 +2,9 @@ package com.mahem.furnace_mod;
 
 import com.mahem.furnace_mod.creative_mode.ModCreativeModeTab;
 import com.mahem.furnace_mod.data_gen.ModDataComponent;
-import com.mahem.furnace_mod.mod_types.ModBlockEntityType;
-import com.mahem.furnace_mod.mod_types.ModItemTypes;
-import com.mahem.furnace_mod.mod_types.ModMenuType;
+import com.mahem.furnace_mod.mod_types.*;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
@@ -20,10 +14,9 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.registries.*;
 import org.slf4j.Logger;
 
-import static com.mahem.furnace_mod.ModBlockTypes.*;
+import static com.mahem.furnace_mod.mod_types.ModBlockType.*;
 
 @Mod(FurnaceMod.MODID)
 public class FurnaceMod {
@@ -39,8 +32,8 @@ public class FurnaceMod {
         // Sorting will be needed probably
         ModCreativeModeTab.register(modEventBus);
 
-        ModItemTypes.register(modEventBus);
-        ModBlockTypes.register(modEventBus);
+        ModBlockType.register(modEventBus);
+        ModItemType.register(modEventBus);
 
         ModDataComponent.register(modEventBus);
         //ModStats.register(modEventBus);
@@ -53,6 +46,8 @@ public class FurnaceMod {
 
         ModBlockEntityType.register(modEventBus);
         ModMenuType.register(modEventBus);
+
+        ModRecipeType.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
         // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
@@ -71,6 +66,10 @@ public class FurnaceMod {
 
     // Add the example block item to the functional blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
+            event.accept(FORGE_FURNACE);
+            //event.accept(ADAPTING_FURNACE_ITEM);
+        }
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

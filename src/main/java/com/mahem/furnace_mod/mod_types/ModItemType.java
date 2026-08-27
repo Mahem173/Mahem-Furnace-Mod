@@ -4,15 +4,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.IModBusEvent;
-import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import static com.mahem.furnace_mod.FurnaceMod.MODID;
 
 
 // Here go standalone non-block items
-public class ModItemTypes {
+public class ModItemType {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
 
 

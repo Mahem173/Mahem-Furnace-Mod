@@ -1,7 +1,7 @@
 package com.mahem.furnace_mod.data_gen;
 
 import com.mahem.furnace_mod.FurnaceMod;
-import com.mahem.furnace_mod.ModBlockTypes;
+import com.mahem.furnace_mod.mod_types.ModBlockType;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
@@ -17,7 +17,7 @@ public class ModBlockTagProvider extends BlockTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(ModBlockTypes.getRK(ModBlockTypes.FORGE_FURNACE.get()));
+                .add(ModBlockType.getRK(ModBlockType.FORGE_FURNACE.get()));
 
 
     }

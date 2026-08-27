@@ -2,46 +2,10 @@
   "itemGroup.furnace_mod": "Furnace Mod Tab",
 
   "block.furnace_mod.forge_furnace": "Forge Furnace",
-  "item.furnace_mod.forge_furnace": "Forge Furnace",
+  "container.forge_furnace": "Forge Furnace",
 
-  "block.furnace_mod.refined_furnace": "Refined Furnace",
-  "item.furnace_mod.refined_furnace": "Refined Furnace",
 
-  "block.furnace_mod.pressurised_furnace": "Pressurised Furnace",
-  "item.furnace_mod.pressurised_furnace": "Pressurised Furnace",
 
-  "block.furnace_mod.lava_furnace": "Lava Furnace",
-  "item.furnace_mod.lava_furnace": "Lava Furnace",
-
-  "block.furnace_mod.brittle_furnace": "Brittle Furnace",
-  "item.furnace_mod.brittle_furnace": "Brittle Furnace",
-
-  "block.furnace_mod.metallurgic_furnace": "Metallurgic Furnace",
-  "item.furnace_mod.metallurgic_furnace": "Metallurgic Furnace",
-
-  "block.furnace_mod.wise_furnace": "Wise Furnace",
-  "item.furnace_mod.wise_furnace": "Wise Furnace",
-
-  "block.furnace_mod.adapting_furnace": "Adapting Furnace",
-  "item.furnace_mod.adapting_furnace": "Adapting Furnace",
-
-  "block.furnace_mod.inflammable_furnace": "Inflammable Furnace",
-  "item.furnace_mod.inflammable_furnace": "Inflammable Furnace",
-
-  "block.furnace_mod.capitalist_furnace": "Capitalist Furnace",
-  "item.furnace_mod.capitalist_furnace": "Capitalist Furnace",
-
-  "block.furnace_mod.dirty_furnace": "Dirty Furnace",
-  "item.furnace_mod.dirty_furnace": "Dirty Furnace",
-
-  "block.furnace_mod.precarious_furnace": "Precarious Furnace",
-  "item.furnace_mod.precarious_furnace": "Precarious Furnace",
-
-  "block.furnace_mod.weird_furnace": "Weird Furnace",
-  "item.furnace_mod.weird_furnace": "Weird Furnace",
-
-  "block.furnace_mod.compiled_furnace": "Compiled Furnace",
-  "item.furnace_mod.compiled_furnace": "Compiled Furnace",
 
 
 
@@ -53,5 +17,5 @@
   "furnace_mod.configuration.logDirtBlock": "Log Dirt Block",
   "furnace_mod.configuration.magicNumberIntroduction": "Magic Number Text",
   "furnace_mod.configuration.magicNumber": "Magic Number",
-  "creativetab.furnace_mod.forge_furnace_items": "Furnace Mod Items"
+  "creativetab.furnace_mod.furnace_blocks": "Furnace Mod Blocks"
 }

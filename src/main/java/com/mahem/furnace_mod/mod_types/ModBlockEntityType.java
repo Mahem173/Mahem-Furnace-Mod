@@ -9,8 +9,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Supplier;
 
-import static com.mahem.furnace_mod.ModBlockTypes.FORGE_FURNACE;
-import static com.mahem.furnace_mod.ModBlockTypes.REFINED_FURNACE;
+import static com.mahem.furnace_mod.mod_types.ModBlockType.FORGE_FURNACE;
 
 
 public class ModBlockEntityType extends BlockEntityTypes {

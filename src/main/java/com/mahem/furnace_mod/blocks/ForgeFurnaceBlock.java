@@ -12,15 +12,22 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.NonNull;
 
 public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
     public static final MapCodec<com.mahem.furnace_mod.blocks.ForgeFurnaceBlock> CODEC = simpleCodec(com.mahem.furnace_mod.blocks.ForgeFurnaceBlock::new);
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
     @Override
     public MapCodec<? extends AbstractFurnaceBlock> codec() {
@@ -29,11 +36,24 @@ public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
 
     public ForgeFurnaceBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    public BlockEntity newBlockEntity(@NonNull BlockPos worldPosition, @NonNull BlockState blockState) {
+    public BlockEntity newBlockEntity(BlockPos worldPosition, BlockState blockState) {
         return new ForgeFurnaceBlockEntity(worldPosition, blockState); // Should be always non-null?
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> propertyBuilder) {
+        propertyBuilder.add(FACING);
+        propertyBuilder.add(BlockStateProperties.LIT);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext propertyContext) {
+        // 4. Set the direction based on where the player is looking when they place it
+        return this.defaultBlockState().setValue(FACING, propertyContext.getHorizontalDirection().getOpposite());
     }
 
     @Override
