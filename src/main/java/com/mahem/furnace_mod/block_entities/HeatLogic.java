@@ -6,19 +6,22 @@ public class HeatLogic {
     protected int deductHeat;
     protected boolean isLit;
 
-    public void conduction() {
-        if (this.isLit) {
-            this.totalHeat += this.addHeat;
+    public void conduction(boolean isLit) {
+        if (isLit) {
+            totalHeat += addHeat;
         } else {
-            this.totalHeat -= this.deductHeat;
+            totalHeat -= deductHeat;
+            System.out.println("Coolin down'");
         }
-        if (this.totalHeat <= 0) {
-            this.totalHeat = 0;
+        if (totalHeat <= 0) {
+            totalHeat = 0;
         }
     }
 
     public void setAddHeat(int value) {
-        this.addHeat = value;}
+        this.addHeat = value;
+        System.out.println(this.totalHeat);
+    }
 
     public int getTotalHeat() {return this.totalHeat;}
     public int getAddHeat() {return this.addHeat;}

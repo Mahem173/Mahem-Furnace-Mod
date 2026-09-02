@@ -1,0 +1,2 @@
+protected net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity cookingTimer
+protected net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity cookingTotalTimer

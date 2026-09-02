@@ -11,6 +11,8 @@ public class ModRecipeType {
     public static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(Registries.RECIPE_TYPE, "furnace_mod");
 
 
+
+
     public static void register(IEventBus eventBus) {
         RECIPE_TYPES.register(eventBus);
         RECIPE_SERIALIZERS.register(eventBus);

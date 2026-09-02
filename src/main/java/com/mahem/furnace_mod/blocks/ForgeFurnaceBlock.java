@@ -13,6 +13,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
 import net.minecraft.world.level.block.Block;
@@ -22,12 +23,16 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.NonNull;
+
+import javax.annotation.Nullable;
 
 public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
     public static final MapCodec<com.mahem.furnace_mod.blocks.ForgeFurnaceBlock> CODEC = simpleCodec(com.mahem.furnace_mod.blocks.ForgeFurnaceBlock::new);
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
+
 
     @Override
     public MapCodec<? extends AbstractFurnaceBlock> codec() {
@@ -36,12 +41,12 @@ public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
 
     public ForgeFurnaceBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, false));
     }
 
     @Override
     public BlockEntity newBlockEntity(BlockPos worldPosition, BlockState blockState) {
-        return new ForgeFurnaceBlockEntity(worldPosition, blockState); // Should be always non-null?
+        return new ForgeFurnaceBlockEntity(worldPosition, blockState);
     }
 
     @Override
@@ -56,8 +61,18 @@ public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
         return this.defaultBlockState().setValue(FACING, propertyContext.getHorizontalDirection().getOpposite());
     }
 
+    public boolean hasDynamicLightEmission(BlockState state) {
+        return true;
+    }
+
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        if (state.getValue(AbstractFurnaceBlock.LIT)) {return 13;}
+        else {return 0;}
+    }
+
+    @Override
+    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         if (level.isClientSide()) {
             return null;
         }
@@ -72,7 +87,7 @@ public class ForgeFurnaceBlock extends AbstractFurnaceBlock {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof ForgeFurnaceBlockEntity) {
             player.openMenu((MenuProvider)blockEntity);
-            player.awardStat(Stats.INTERACT_WITH_BLAST_FURNACE);
+            player.awardStat(Stats.INTERACT_WITH_FURNACE);
         }
     }
 
