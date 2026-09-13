@@ -1,36 +1,136 @@
 package com.mahem.furnace_mod.menus;
 
-import com.mahem.furnace_mod.mod_types.ModMenuType;
+import com.mahem.furnace_mod.block_entities.ForgeFurnaceBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.AbstractFurnaceMenu;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.RecipeBookType;
-import net.minecraft.world.inventory.SimpleContainerData;
-import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
+import static com.mahem.furnace_mod.mod_types.ModBlockType.FORGE_FURNACE;
+import static com.mahem.furnace_mod.mod_types.ModMenuType.FORGE_FURNACE_MENU;
 
-public class ForgeFurnaceMenu extends AbstractFurnaceMenu {
+public class ForgeFurnaceMenu extends AbstractContainerMenu {
+    public final ForgeFurnaceBlockEntity blockEntity;
+    private final Level level;
+    private final ContainerData data;
 
-    public ForgeFurnaceMenu(int containerId, Inventory playerInv, RegistryFriendlyByteBuf registryFriendlyByteBuf) {
-        this(containerId, playerInv, new SimpleContainer(3), new SimpleContainerData(4));
+    public ForgeFurnaceMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
+        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new ItemStacksResourceHandler(3), new SimpleContainerData(3));
     }
 
-    // Constructor for server-side (actual usage)
-    public ForgeFurnaceMenu(int containerId, Inventory playerInv, Container container, ContainerData data) {
-        super(
-                ModMenuType.FORGE_FURNACE_MENU.get(), // MenuType
-                RecipePropertySet.FURNACE_INPUT,
-                RecipeBookType.FURNACE,               // RecipeBookType (Enum)
-                containerId,
-                playerInv,
-                container,
-                data
-        );
+    public ForgeFurnaceMenu(int pContainerId, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
+        super(FORGE_FURNACE_MENU.get(), pContainerId);
+
+        blockEntity = ((ForgeFurnaceBlockEntity) entity);
+        this.level = inv.player.level();
+        this.data = data;
+
+        addPlayerInventory(inv);
+        addPlayerHotbar(inv);
+
+        this.addSlot(new ResourceHandlerSlot(handler, handler::set,0, 56, 17));
+        this.addSlot(new ResourceHandlerSlot(handler, handler::set, 1,  56, 53));
+        this.addSlot(new ResourceHandlerSlot(handler, handler::set,2, 116, 35) {
+            @Override
+            public boolean mayPlace(ItemStack itemStack) {
+                return false;
+            }
+        });
+
+        addDataSlots(data);
+    }
+
+    public boolean isCrafting() {
+        return data.get(0) > 0;
+    }
+
+    public float getBurnProgress() {
+        int current = this.data.get(2);
+        int total = this.data.get(3);
+        return total != 0 && current != 0 ? Mth.clamp((float)current / (float)total, 0.0F, 1.0F) : 0.0F;
+    }
+
+    public float getLitProgress() {
+        int litDuration = this.data.get(1);
+        if (litDuration == 0) {
+            litDuration = 200;
+        }
+
+        return Mth.clamp((float)this.data.get(0) / (float)litDuration, 0.0F, 1.0F);
+    }
+
+    // CREDIT GOES TO: diesieben07 | https://github.com/diesieben07/SevenCommons
+    // must assign a slot number to each of the slots used by the GUI.
+    // For this container, we can see both the tile inventory's slots as well as the player inventory slots and the hotbar.
+    // Each time we add a Slot to the container, it automatically increases the slotIndex, which means
+    //  0 - 8 = hotbar slots (which will map to the InventoryPlayer slot numbers 0 - 8)
+    //  9 - 35 = player inventory slots (which map to the InventoryPlayer slot numbers 9 - 35)
+    //  36 - 44 = TileInventory slots, which map to our TileEntity slot numbers 0 - 8)
+    private static final int HOTBAR_SLOT_COUNT = 9;
+    private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
+    private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
+    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
+    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
+    private static final int VANILLA_FIRST_SLOT_INDEX = 0;
+    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+
+    // THIS YOU HAVE TO DEFINE!
+    private static final int TE_INVENTORY_SLOT_COUNT = 2;  // must be the number of slots you have!
+    @Override
+    public ItemStack quickMoveStack(Player playerIn, int pIndex) {
+        Slot sourceSlot = slots.get(pIndex);
+        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
+        ItemStack sourceStack = sourceSlot.getItem();
+        ItemStack copyOfSourceStack = sourceStack.copy();
+
+        // Check if the slot clicked is one of the vanilla container slots
+        if (pIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
+            // This is a vanilla container slot so merge the stack into the tile inventory
+            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX
+                    + TE_INVENTORY_SLOT_COUNT, false)) {
+                return ItemStack.EMPTY;  // EMPTY_ITEM
+            }
+        } else if (pIndex < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
+            // This is a TE slot so merge the stack into the players inventory
+            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+                return ItemStack.EMPTY;
+            }
+        } else {
+            System.out.println("Invalid slotIndex:" + pIndex);
+            return ItemStack.EMPTY;
+        }
+        // If stack size == 0 (the entire stack was moved) set slot contents to null
+        if (sourceStack.getCount() == 0) {
+            sourceSlot.set(ItemStack.EMPTY);
+        } else {
+            sourceSlot.setChanged();
+        }
+        sourceSlot.onTake(playerIn, sourceStack);
+        return copyOfSourceStack;
+    }
+
+    @Override
+    public boolean stillValid(Player pPlayer) {
+        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
+                pPlayer, FORGE_FURNACE.get());
+    }
+
+    private void addPlayerInventory(Inventory playerInventory) {
+        for (int i = 0; i < 3; ++i) {
+            for (int l = 0; l < 9; ++l) {
+                this.addSlot(new Slot(playerInventory, l + i * 9 + 9, 8 + l * 18, 84 + i * 18));
+            }
+        }
+    }
+
+    private void addPlayerHotbar(Inventory playerInventory) {
+        for (int i = 0; i < 9; ++i) {
+            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
+        }
     }
 }
-
-
-//FriendlyByteBuf extraData

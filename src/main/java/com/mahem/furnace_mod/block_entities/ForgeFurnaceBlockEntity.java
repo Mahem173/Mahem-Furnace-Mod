@@ -1,76 +1,224 @@
 package com.mahem.furnace_mod.block_entities;
 
-import com.mahem.furnace_mod.mod_types.ModBlockEntityType;
+import com.mahem.furnace_mod.blocks.ForgeFurnaceBlock;
 import com.mahem.furnace_mod.menus.ForgeFurnaceMenu;
-import com.mahem.furnace_mod.mod_types.ModRecipeType;
+import com.mahem.furnace_mod.recipes.ForgeFurnaceRecipe;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.AbstractFurnaceBlock;
-import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
-import net.minecraft.world.level.block.entity.FuelValues;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.jspecify.annotations.Nullable;
 
-import java.lang.foreign.SymbolLookup;
+import java.util.Optional;
 
+import static com.mahem.furnace_mod.mod_types.ModBlockEntityType.FORGE_FURNACE_ENTITY;
+import static com.mahem.furnace_mod.mod_types.ModRecipeType.FORGE_FURNACE_TYPE;
 
-public class ForgeFurnaceBlockEntity extends AbstractFurnaceBlockEntity {
-    private static final Component DEFAULT_NAME = Component.translatable("container.forge_furnace");
-    private final HeatLogic heatLogic = new HeatLogic();
-    protected boolean litUp;
+public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider {
+    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(2) {
+        @Override
+        protected void onContentsChanged(int index, ItemStack previousContents) {
+            super.onContentsChanged(index, previousContents);
+            ForgeFurnaceBlockEntity.this.setChanged();
+        }
+    };
 
+    private static final int INPUT_SLOT = 0;
+    private static final int FUEL_SLOT = 1;
+    private static final int OUTPUT_SLOT = 2;
 
+    private final ContainerData data;
+    private int progress = 0;
+    private int maxProgress = 200;
+    private int litTimeRemaining = 0;
+    private int totalLitTime = 0;
 
     public ForgeFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
-        super(ModBlockEntityType.FORGE_FURNACE_ENTITY.get(), worldPosition, blockState, RecipeType.SMELTING);
-        this.heatLogic.setAddHeat(10);
+        super(FORGE_FURNACE_ENTITY.get(), worldPosition, blockState);
+        this.data = new ContainerData() {
+            @Override
+            public int get(int dataId) {
+                return switch (dataId) {
+                    case 0 -> ForgeFurnaceBlockEntity.this.progress;
+                    case 1 -> ForgeFurnaceBlockEntity.this.maxProgress;
+                    case 2 -> ForgeFurnaceBlockEntity.this.litTimeRemaining;
+                    case 3 -> ForgeFurnaceBlockEntity.this.totalLitTime;
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int dataId, int value) {
+                switch (dataId) {
+                    case 0: ForgeFurnaceBlockEntity.this.progress = value;
+                    case 1: ForgeFurnaceBlockEntity.this.maxProgress = value;
+                    case 2: ForgeFurnaceBlockEntity.this.litTimeRemaining = value;
+                    case 3: ForgeFurnaceBlockEntity.this.totalLitTime = value;
+                }
+            }
+
+            @Override
+            public int getCount() {
+                return 2;
+            }
+        };
     }
-
-    public static void tick(Level level, BlockPos pos, BlockState state, ForgeFurnaceBlockEntity blockEntity) {
-        blockEntity.litUp = level.getBlockState(pos).getValue(AbstractFurnaceBlock.LIT);
-        blockEntity.heatLogic.conduction(blockEntity.litUp);
-
-        int progress = blockEntity.dataAccess.get(AbstractFurnaceBlockEntity.DATA_COOKING_PROGRESS);
-        int total = blockEntity.dataAccess.get(AbstractFurnaceBlockEntity.DATA_COOKING_TOTAL_TIME);
-        float forgeProgress = 0f;
-
-        float heatValue = (float) blockEntity.heatLogic.totalHeat / 50f;
-        forgeProgress += (heatValue+10f);
-        if (forgeProgress >= 200f) {forgeProgress -= 200f;}
-
-        blockEntity.dataAccess.set(AbstractFurnaceBlockEntity.DATA_COOKING_PROGRESS, (int) forgeProgress);
-        System.out.println("Progress " + progress + "/" + total);
-        System.out.println("Heat " + heatValue);
-        System.out.println("Heat Multiplier " + forgeProgress);
-        System.out.println("Forge Progress " + forgeProgress + "/" + total);
-
-        AbstractFurnaceBlockEntity.serverTick((ServerLevel) level, pos, state, blockEntity);
-    }
-
 
     @Override
-    protected Component getDefaultName() {
-        return DEFAULT_NAME;
+    public Component getDisplayName() {
+        return Component.translatable("block.furnace_mod.forge_furnace");
     }
 
     @Override
-    protected int getBurnDuration(FuelValues fuelValues, ItemStack itemStack) {
-        return super.getBurnDuration(fuelValues, itemStack);    //this.heatLogic.totalHeat;
+    public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
+        return new ForgeFurnaceMenu(containerId, inventory, this, this.inventory, this.data);
     }
-
 
     @Override
-    protected AbstractContainerMenu createMenu(int id, Inventory playerInv) {
-        return new ForgeFurnaceMenu(id, playerInv, this, this.dataAccess);
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("furnace.progress", progress);
+        output.putInt("furnace.max_progress", maxProgress);
+
+        output.putChild("inventory", inventory);
     }
 
-    public ContainerData getContainerData() {
-        return this.dataAccess;
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        progress = input.getIntOr("furnace.progress", 0);
+        maxProgress = input.getIntOr("furnace.max_progress", 72);
+
+        input.child("inventory").ifPresent(inventory::deserialize);
+    }
+
+    public void drops() {
+        SimpleContainer inv = new SimpleContainer(inventory.size());
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemAccess itemAccess = ItemAccess.forHandlerIndex(inventory, i);
+            inv.setItem(i, new ItemStack(itemAccess.getResource().getItem(), itemAccess.getAmount()));
+        }
+        Containers.dropContents(this.level, this.worldPosition, inv);
+    }
+
+    public void tick(Level level, BlockPos pos, BlockState state) {
+        if(hasRecipe() && isOutputSlotEmptyOrReceivable()) {
+            increaseCraftingProgress();
+            setChanged(level, pos, state);
+            level.setBlockAndUpdate(pos, state.setValue(ForgeFurnaceBlock.LIT, true));
+
+            if(hasCraftingFinished()) {
+                craftItem();
+                resetProgress();
+            }
+        } else {
+            resetProgress();
+            level.setBlockAndUpdate(pos, state.setValue(ForgeFurnaceBlock.LIT, false));
+        }
+    }
+
+    private void craftItem() {
+        Optional<RecipeHolder<ForgeFurnaceRecipe>> recipe = getCurrentRecipe();
+        ItemStack output = recipe.get().value().assemble(new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()));
+
+        try(Transaction transaction = Transaction.openRoot()) {
+            ItemAccess itemAccess = ItemAccess.forHandlerIndex(inventory, OUTPUT_SLOT);
+
+            inventory.extract(INPUT_SLOT, inventory.getResource(INPUT_SLOT), 1, transaction);
+            inventory.set(OUTPUT_SLOT, ItemResource.of(output), itemAccess.getAmount() + output.getCount());
+
+            transaction.commit();
+        }
+    }
+
+    private boolean hasRecipe() {
+        Optional<RecipeHolder<ForgeFurnaceRecipe>> recipe = getCurrentRecipe();
+        if(recipe.isEmpty()) {
+            return false;
+        }
+
+        ItemStack output = recipe.get().value().assemble(new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()));
+
+        boolean outputSlotAmount = canInsertAmountIntoOutputSlot(output.getCount());
+        boolean outputSlotItem = canInsertItemIntoOutputSlot(output);
+
+        return outputSlotAmount && outputSlotItem;
+    }
+
+    private Optional<RecipeHolder<ForgeFurnaceRecipe>> getCurrentRecipe() {
+        return ((ServerLevel) level).recipeAccess()
+                .getRecipeFor(FORGE_FURNACE_TYPE.get(),
+                        new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()), level);
+    }
+
+    private boolean canInsertItemIntoOutputSlot(ItemStack output) {
+        return inventory.getResource(OUTPUT_SLOT).isEmpty() ||
+                inventory.getResource(OUTPUT_SLOT).is(output.getItem());
+    }
+
+    private boolean canInsertAmountIntoOutputSlot(int count) {
+        int maxCount = inventory.getResource(OUTPUT_SLOT).isEmpty() ? 64 : inventory.getResource(OUTPUT_SLOT).getMaxStackSize();
+        int currentCount = inventory.getAmountAsInt(OUTPUT_SLOT);
+
+        return maxCount >= currentCount + count;
+    }
+
+    private boolean isOutputSlotEmptyOrReceivable() {
+        return inventory.getResource(OUTPUT_SLOT).isEmpty() ||
+                inventory.getResource(OUTPUT_SLOT).test(stack -> stack.count() < stack.getMaxStackSize());
+    }
+
+    private boolean hasCraftingFinished() {
+        return progress >= maxProgress;
+    }
+
+    private void increaseCraftingProgress() {
+        progress++;
+    }
+
+    private void resetProgress() {
+        progress = 0;
+        maxProgress = 72;
+    }
+
+    /* BLOCK ENTITY SYNC */
+    @Nullable
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider pRegistries) {
+        return saveWithoutMetadata(pRegistries);
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ValueInput valueInput) {
+        super.onDataPacket(net, valueInput);
     }
 }

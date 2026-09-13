@@ -7,7 +7,6 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Collections;
@@ -35,17 +34,17 @@ public class FurnaceModDataGen {
         //generator.addProvider(true, new ModDataMapProvider(packOutput, lookupProvider));
         generator.addProvider(true, new ModItemTagProvider(packOutput, lookupProvider));
 
-        //generator.addProvider(true, new ModEquipmentAssetProvider(packOutput));
-        //generator.addProvider(true, new ModDatapackProvider(packOutput, lookupProvider));
-        //generator.addProvider(true, new ModPaintingTagsProvider(packOutput, lookupProvider));
+        /*generator.addProvider(true, new ModEquipmentAssetProvider(packOutput));
+        generator.addProvider(true, new ModDatapackProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new ModPaintingTagsProvider(packOutput, lookupProvider));
 
-        //generator.addProvider(true, new ModSoundsProvider(packOutput));
-        //generator.addProvider(true, new ModAdvancements(packOutput, lookupProvider));
+        generator.addProvider(true, new ModSoundsProvider(packOutput));
+        generator.addProvider(true, new ModAdvancements(packOutput, lookupProvider));
 
-        //generator.addProvider(true, new ModVillagerTradeTags(packOutput, lookupProvider));
-        //generator.addProvider(true, new ModPOITags(packOutput, lookupProvider));
+        generator.addProvider(true, new ModVillagerTradeTags(packOutput, lookupProvider));
+        generator.addProvider(true, new ModPOITags(packOutput, lookupProvider));
 
-        //generator.addProvider(true, new ModGlobalLootModifierProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new ModGlobalLootModifierProvider(packOutput, lookupProvider));*/
 
     }
 
