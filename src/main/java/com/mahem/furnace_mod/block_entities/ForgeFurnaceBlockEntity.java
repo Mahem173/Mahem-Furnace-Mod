@@ -1,6 +1,5 @@
 package com.mahem.furnace_mod.block_entities;
 
-import com.mahem.furnace_mod.blocks.ForgeFurnaceBlock;
 import com.mahem.furnace_mod.menus.ForgeFurnaceMenu;
 import com.mahem.furnace_mod.recipes.ForgeFurnaceRecipe;
 import net.minecraft.core.BlockPos;
@@ -35,11 +34,12 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
+import static com.mahem.furnace_mod.blocks.ForgeFurnaceBlock.LIT;
 import static com.mahem.furnace_mod.mod_types.ModBlockEntityType.FORGE_FURNACE_ENTITY;
 import static com.mahem.furnace_mod.mod_types.ModRecipeType.FORGE_FURNACE_TYPE;
 
 public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider {
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(2) {
+    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(3) {
         @Override
         protected void onContentsChanged(int index, ItemStack previousContents) {
             super.onContentsChanged(index, previousContents);
@@ -57,8 +57,11 @@ public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider
     private int litTimeRemaining = 0;
     private int totalLitTime = 0;
 
+    private final HeatLogic heatLogic = new HeatLogic();
+
     public ForgeFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
         super(FORGE_FURNACE_ENTITY.get(), worldPosition, blockState);
+        this.heatLogic.setAddHeat(10);
         this.data = new ContainerData() {
             @Override
             public int get(int dataId) {
@@ -95,7 +98,7 @@ public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        return new ForgeFurnaceMenu(containerId, inventory, this, this.inventory, this.data);
+        return new ForgeFurnaceMenu(containerId, inventory, this);
     }
 
     @Override
@@ -113,7 +116,7 @@ public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider
         progress = input.getIntOr("furnace.progress", 0);
         maxProgress = input.getIntOr("furnace.max_progress", 72);
 
-        input.child("inventory").ifPresent(inventory::deserialize);
+        input.child("inventory"); //.ifPresent(inventory::deserialize)
     }
 
     public void drops() {
@@ -129,7 +132,7 @@ public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider
         if(hasRecipe() && isOutputSlotEmptyOrReceivable()) {
             increaseCraftingProgress();
             setChanged(level, pos, state);
-            level.setBlockAndUpdate(pos, state.setValue(ForgeFurnaceBlock.LIT, true));
+            level.setBlockAndUpdate(pos, state.setValue(LIT, true));
 
             if(hasCraftingFinished()) {
                 craftItem();
@@ -137,8 +140,10 @@ public class ForgeFurnaceBlockEntity extends BlockEntity implements MenuProvider
             }
         } else {
             resetProgress();
-            level.setBlockAndUpdate(pos, state.setValue(ForgeFurnaceBlock.LIT, false));
+            level.setBlockAndUpdate(pos, state.setValue(LIT, false));
         }
+
+        this.heatLogic.conduction(level.getBlockState(worldPosition).getValue(LIT));
     }
 
     private void craftItem() {

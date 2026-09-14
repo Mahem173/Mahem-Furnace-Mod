@@ -2,11 +2,14 @@ package com.mahem.furnace_mod.menus;
 
 import com.mahem.furnace_mod.block_entities.ForgeFurnaceBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
@@ -18,23 +21,36 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     public final ForgeFurnaceBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
+    private final RecipePropertySet acceptedInputs;
 
-    public ForgeFurnaceMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new ItemStacksResourceHandler(3), new SimpleContainerData(3));
+    public ForgeFurnaceMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
+        this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    public ForgeFurnaceMenu(int pContainerId, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
+    public ForgeFurnaceMenu(int pContainerId, Inventory inv, BlockEntity blockEntity) {
+        this(pContainerId, RecipePropertySet.FURNACE_INPUT, inv, blockEntity, ((ForgeFurnaceBlockEntity) blockEntity).inventory, new SimpleContainerData(4));
+    }
+
+    public ForgeFurnaceMenu(int pContainerId, ResourceKey<RecipePropertySet> allowedInputs, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
         super(FORGE_FURNACE_MENU.get(), pContainerId);
 
         blockEntity = ((ForgeFurnaceBlockEntity) entity);
         this.level = inv.player.level();
         this.data = data;
+        this.acceptedInputs = this.level.recipeAccess().propertySet(allowedInputs);
 
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
         this.addSlot(new ResourceHandlerSlot(handler, handler::set,0, 56, 17));
-        this.addSlot(new ResourceHandlerSlot(handler, handler::set, 1,  56, 53));
+        this.addSlot(new ResourceHandlerSlot(handler, handler::set, 1,  56, 53) {
+            @Override
+            public boolean mayPlace(ItemStack itemStack) {
+                 if (isFuel(itemStack)) {
+                     return true;
+                 } else return false;
+            }
+        });
         this.addSlot(new ResourceHandlerSlot(handler, handler::set,2, 116, 35) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
@@ -43,6 +59,15 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
         });
 
         addDataSlots(data);
+    }
+
+
+    protected boolean canSmelt(ItemStack itemStack) {
+        return this.acceptedInputs.test(itemStack);
+    }
+
+    protected boolean isFuel(ItemStack itemStack) {
+        return itemStack.getBurnTime(RecipeType.SMELTING, this.level.fuelValues()) > 0;
     }
 
     public boolean isCrafting() {
@@ -80,38 +105,55 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 
     // THIS YOU HAVE TO DEFINE!
-    private static final int TE_INVENTORY_SLOT_COUNT = 2;  // must be the number of slots you have!
+    private static final int TE_INVENTORY_SLOT_COUNT = 3;  // must be the number of slots you have!
+
     @Override
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
-        Slot sourceSlot = slots.get(pIndex);
-        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
-        ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack copyOfSourceStack = sourceStack.copy();
+        ItemStack clicked = ItemStack.EMPTY;
+        Slot slot = (Slot)this.slots.get(pIndex);
+        if (slot != null && slot.hasItem()) {
+            ItemStack stack = slot.getItem();
+            clicked = stack.copy();
+            if (pIndex == 2) {
+                if (!this.moveItemStackTo(stack, 3, 39, true)) {
+                    return ItemStack.EMPTY;
+                }
 
-        // Check if the slot clicked is one of the vanilla container slots
-        if (pIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
-            // This is a vanilla container slot so merge the stack into the tile inventory
-            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX
-                    + TE_INVENTORY_SLOT_COUNT, false)) {
-                return ItemStack.EMPTY;  // EMPTY_ITEM
-            }
-        } else if (pIndex < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
-            // This is a TE slot so merge the stack into the players inventory
-            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+                slot.onQuickCraft(stack, clicked);
+            } else if (pIndex != 1 && pIndex != 0) {
+                if (this.canSmelt(stack)) {
+                    if (!this.moveItemStackTo(stack, 0, 1, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (this.isFuel(stack)) {
+                    if (!this.moveItemStackTo(stack, 1, 2, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (pIndex >= 3 && pIndex < 30) {
+                    if (!this.moveItemStackTo(stack, 30, 39, false)) {
+                        return ItemStack.EMPTY;
+                    }
+                } else if (pIndex >= 30 && pIndex < 39 && !this.moveItemStackTo(stack, 3, 30, false)) {
+                    return ItemStack.EMPTY;
+                }
+            } else if (!this.moveItemStackTo(stack, 3, 39, false)) {
                 return ItemStack.EMPTY;
             }
-        } else {
-            System.out.println("Invalid slotIndex:" + pIndex);
-            return ItemStack.EMPTY;
+
+            if (stack.isEmpty()) {
+                slot.setByPlayer(ItemStack.EMPTY);
+            } else {
+                slot.setChanged();
+            }
+
+            if (stack.getCount() == clicked.getCount()) {
+                return ItemStack.EMPTY;
+            }
+
+            slot.onTake(playerIn, stack);
         }
-        // If stack size == 0 (the entire stack was moved) set slot contents to null
-        if (sourceStack.getCount() == 0) {
-            sourceSlot.set(ItemStack.EMPTY);
-        } else {
-            sourceSlot.setChanged();
-        }
-        sourceSlot.onTake(playerIn, sourceStack);
-        return copyOfSourceStack;
+
+        return clicked;
     }
 
     @Override

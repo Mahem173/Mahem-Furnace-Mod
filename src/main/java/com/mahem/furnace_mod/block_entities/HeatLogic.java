@@ -1,12 +1,15 @@
 package com.mahem.furnace_mod.block_entities;
 
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import org.jetbrains.annotations.UnknownNullability;
+
 public class HeatLogic {
     protected int totalHeat;
     protected int addHeat;
     protected int deductHeat;
     protected boolean isLit;
 
-    public void conduction(boolean isLit) {
+    public boolean conduction(boolean isLit) {
         if (isLit) {
             totalHeat += addHeat;
         } else {
@@ -16,6 +19,7 @@ public class HeatLogic {
         if (totalHeat <= 0) {
             totalHeat = 0;
         }
+        return isLit;
     }
 
     public void setAddHeat(int value) {
@@ -27,5 +31,4 @@ public class HeatLogic {
     public int getAddHeat() {return this.addHeat;}
     public int getDeductHeat() {return this.deductHeat;}
     public boolean getIsLit() {return this.isLit;}
-    public void setLit(boolean lit) {this.isLit = lit;}
 }
