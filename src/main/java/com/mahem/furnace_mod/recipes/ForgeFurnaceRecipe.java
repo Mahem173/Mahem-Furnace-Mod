@@ -17,6 +17,7 @@ public record ForgeFurnaceRecipe(Ingredient inputItem, ItemStackTemplate output)
                     Ingredient.CODEC.fieldOf("ingredient").forGetter(ForgeFurnaceRecipe::inputItem),
                     ItemStackTemplate.CODEC.fieldOf("result").forGetter(ForgeFurnaceRecipe::output)
             ).apply(instance, ForgeFurnaceRecipe::new));
+
     public static final StreamCodec<RegistryFriendlyByteBuf, ForgeFurnaceRecipe> STREAM_CODEC =
             StreamCodec.composite(
                     Ingredient.CONTENTS_STREAM_CODEC,

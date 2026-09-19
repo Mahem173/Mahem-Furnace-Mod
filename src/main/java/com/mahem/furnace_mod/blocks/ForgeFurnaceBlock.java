@@ -104,7 +104,7 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
         }
 
         return createTickerHelper(type, FORGE_FURNACE_ENTITY.get(), (level1, pos, state, entity) ->
-                entity.tick(level1, pos, state));
+                entity.tick(level1, pos, state, entity));
     }
 
     /* LIT */
