@@ -10,8 +10,8 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class ForgeFurnaceScreen extends AbstractContainerScreen<ForgeFurnaceMenu> {
     private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/blast_furnace.png");
-    private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/blast_furnace/lit_progress");
-    private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/blast_furnace/burn_progress");
+    private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
+    private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
     //private static final Component FILTER_NAME = Component.translatable("gui.recipebook.toggleRecipes.blastable");
 
     public ForgeFurnaceScreen(ForgeFurnaceMenu menu, Inventory inventory, Component title) {

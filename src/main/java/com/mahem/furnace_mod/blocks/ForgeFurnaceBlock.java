@@ -131,8 +131,8 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
 
         level.addParticle(ParticleTypes.SMOKE, xPos + xOffsets, yPos + yOffset, zPos + zOffset, 0.0, 0.0, 0.0);
 
-        if(level.getBlockEntity(pos) instanceof ForgeFurnaceBlockEntity crystallizerBlockEntity && !crystallizerBlockEntity.inventory.getResource(1).isEmpty()) {
-            level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, crystallizerBlockEntity.inventory.getResource(1).getItem()),
+        if(level.getBlockEntity(pos) instanceof ForgeFurnaceBlockEntity forgeFurnaceBlockEntity && !forgeFurnaceBlockEntity.inventory.getResource(1).isEmpty()) {
+            level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, forgeFurnaceBlockEntity.inventory.getResource(1).getItem()),
                     xPos + xOffsets, yPos + yOffset, zPos + zOffset, 0.0, 0.0, 0.0);
         }
     }

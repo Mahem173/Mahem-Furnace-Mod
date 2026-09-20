@@ -61,7 +61,6 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
         addDataSlots(data);
     }
 
-
     protected boolean canSmelt(ItemStack itemStack) {
         return this.acceptedInputs.test(itemStack);
     }
@@ -110,7 +109,7 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     @Override
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
         ItemStack clicked = ItemStack.EMPTY;
-        Slot slot = (Slot)this.slots.get(pIndex);
+        Slot slot = this.slots.get(pIndex);
         if (slot != null && slot.hasItem()) {
             ItemStack stack = slot.getItem();
             clicked = stack.copy();
@@ -145,7 +144,6 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
             } else {
                 slot.setChanged();
             }
-
             if (stack.getCount() == clicked.getCount()) {
                 return ItemStack.EMPTY;
             }
