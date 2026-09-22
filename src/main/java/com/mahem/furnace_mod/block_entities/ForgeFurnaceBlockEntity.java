@@ -1,7 +1,6 @@
 package com.mahem.furnace_mod.block_entities;
 
 import com.mahem.furnace_mod.menus.ForgeFurnaceMenu;
-import com.mahem.furnace_mod.recipes.ForgeFurnaceRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -18,13 +17,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackTemplate;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -49,6 +46,10 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         }
     };
 
+    /*public IItemHandler getItemHandler() {
+        return itemHandler;
+    }*/
+
     private final int SIZE = 3;
     private NonNullList<ItemStack> items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
 
@@ -56,18 +57,18 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
     private static final int FUEL_SLOT = 1;
     private static final int OUTPUT_SLOT = 2;
 
+    private final ContainerData data;
     private int progress = 0;
     private int maxProgress = 200;
     private int litTimeRemaining = 0;
     private int totalLitTime = 0;
-    private boolean isCrafting = false;
 
     private final HeatLogic heatLogic = new HeatLogic();
 
     public ForgeFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
         super(FORGE_FURNACE_ENTITY.get(), worldPosition, blockState);
         this.heatLogic.setAddHeat(10);
-        ContainerData data = new ContainerData() {
+        this.data = new ContainerData() {
             @Override
             public int get(int dataId) {
                 return switch (dataId) {
@@ -95,7 +96,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
             @Override
             public int getCount() {
-                return 2;
+                return 4;
             }
         };
     }
@@ -161,23 +162,34 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     public void tick(Level level, BlockPos pos, BlockState state, ForgeFurnaceBlockEntity entity) {
         ServerLevel serverLevel = (ServerLevel) level;
-        ItemStack fuel = inventory.getResource(FUEL_SLOT).toStack();
         ItemStack ingredient = inventory.getResource(INPUT_SLOT).toStack();
+        ItemStack fuel = inventory.getResource(FUEL_SLOT).toStack();
+        ItemStack result = inventory.getResource(OUTPUT_SLOT).toStack();
 
-        boolean isLit = this.heatLogic.conduction(level.getBlockState(worldPosition).getValue(LIT));
+        this.heatLogic.conduction(level.getBlockState(worldPosition).getValue(LIT));
+        boolean isLit;
 
-        if (!hasRecipe()) { // Here we must have recipe ready
-            System.out.println("its joever");
-            resetProgress();
-            level.setBlockAndUpdate(pos, state.setValue(LIT, false));
-            isCrafting = false;
-            return;
+        if (litTimeRemaining > 0) {
+            isLit = true;
+            --litTimeRemaining;
+        } else {
+            isLit = false;
         }
+
+        System.out.println("Progress:" +  progress + "/" + maxProgress);
+        System.out.println("Lit:" +  litTimeRemaining + "/" + totalLitTime);
 
         SingleRecipeInput input = new SingleRecipeInput(ingredient);
         Optional<RecipeHolder<SmeltingRecipe>> recipe = serverLevel.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, serverLevel);
         if (recipe.isEmpty()) {
-            System.out.println("no smelting recipe");
+            resetProgress();
+            if (isLit) {
+                level.setBlockAndUpdate(pos, state.setValue(LIT, true));
+            }
+            else {
+                level.setBlockAndUpdate(pos, state.setValue(LIT, false));
+            }
+
             return;
         }
 
@@ -186,84 +198,55 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
         /* CURRENT PROBLEMS
         1. NO ARROW OR FIRE IN SCREEN
-        2. CAN SMELT WITHOUT FUEL, OVERFLOWS INDEFINITELY UNTIL FUEL IS PUT WHICH RESETS PROGRESS
-        3. CAN SMELT ONLY FOR "ONE" BURN CYCLE AFTERWARDS IT GIVES UP
         */
 
-        if (canBurn(entity.items, maxStackSize, burnResult)) {
-            System.out.println("Burnable !!!!!");
-        }
+        if (hasRecipe()) {
+            if (isLit) {
+                increaseCraftingProgress();
 
-        // Start Smelting
-        if (hasRecipe() && canBurn(entity.items, maxStackSize, burnResult) && isOutputSlotEmptyOrReceivable()) {
-            burn(entity.items, ingredient, fuel);
-            consumeFuel(entity.items, fuel);
-            level.setBlockAndUpdate(pos, state.setValue(LIT, true));
-            increaseCraftingProgress();
-            isCrafting = true;
-            System.out.println("Im smelting");
-        }
+                if (hasCraftingFinished()) {
+                    resetProgress();
+                    craftItem();
+                }
+            }
 
-        // Continue Smelting
-        else if (isLit && isCrafting) {  // Probably will need to be moved to be before starting to smelt
-            level.setBlockAndUpdate(pos, state.setValue(LIT, true));
-            increaseCraftingProgress();
-            isCrafting = true;
-
-            // Finish Crafting
-            if (hasCraftingFinished()) {
+            if (!isLit && canStartSmelting(result, maxStackSize, burnResult) && hasFuel()) {
+                consumeFuel(inventory, fuel);
+                totalLitTime = entity.getBurnDuration(level.fuelValues(), fuel);
+                litTimeRemaining = totalLitTime;
+                level.setBlockAndUpdate(pos, state.setValue(LIT, true));
+            }
+            else if (!isLit && !hasFuel()) {
                 resetProgress();
-                craftItem();
+                level.setBlockAndUpdate(pos, state.setValue(LIT, false));
             }
         }
-        else {
-            resetProgress();
-            level.setBlockAndUpdate(pos, state.setValue(LIT, false));
-            isCrafting = false;
-        }
-
-        System.out.println("Progress:" +  progress + "/" + maxProgress);
-
-
     }
 
-    private static void consumeFuel(NonNullList<ItemStack> items, ItemStack fuel) {
-        Item fuelItem = fuel.getItem();
-        ItemStackTemplate remainder = fuel.getCraftingRemainder();
-        fuel.shrink(1);
-        if (fuel.isEmpty()) {
-            items.set(1, remainder != null ? remainder.create() : ItemStack.EMPTY);
+    private static void consumeFuel(ItemStacksResourceHandler inventory, ItemStack fuel) {
+        try(Transaction transaction = Transaction.openRoot()) {
+            inventory.extract(FUEL_SLOT, inventory.getResource(FUEL_SLOT), 1, transaction);
+            transaction.commit();
         }
     }
 
-    private static boolean canBurn(NonNullList<ItemStack> items, int maxStackSize, ItemStack burnResult) {
-        ItemStack resultItemStack = items.get(2);
-        if (resultItemStack.isEmpty()) {
+    // This checks if burning can initiate without overflowing stack in result slot
+    private static boolean canStartSmelting(ItemStack result, int maxStackSize, ItemStack burnResult) {
+        if (result.isEmpty()) {
             return true;
-        } else if (!ItemStack.isSameItemSameComponents(resultItemStack, burnResult)) {
+        } else if (!ItemStack.isSameItemSameComponents(result, burnResult) ) {
             return false;
-        } else {
-            int resultCount = resultItemStack.getCount() + burnResult.count();
+        }
+        else {
+            int resultCount = result.getCount() + burnResult.count();
             int maxResultCount = Math.min(maxStackSize, burnResult.getMaxStackSize());
             return resultCount <= maxResultCount;
         }
     }
 
-    private static void burn(NonNullList<ItemStack> items, ItemStack inputItemStack, ItemStack result) {
-        ItemStack resultItemStack = items.get(2);
-        if (resultItemStack.isEmpty()) {
-            items.set(2, result.copy());
-        } else {
-            resultItemStack.grow(result.getCount());
-        }
-
-        if (inputItemStack.is(Items.WET_SPONGE) && !items.get(1).isEmpty() && items.get(1).is(Items.BUCKET)) {
-            items.set(1, new ItemStack(Items.WATER_BUCKET));
-        }
-
-        inputItemStack.shrink(1);
+    protected int getBurnDuration(FuelValues fuelValues, ItemStack itemStack) {
+        return itemStack.getBurnTime(RecipeType.SMELTING, fuelValues);
     }
-
 
     private void craftItem() {
         Optional<RecipeHolder<SmeltingRecipe>> recipe = getCurrentRecipe();
@@ -292,23 +275,6 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         return serverLevel.recipeAccess()
                 .getRecipeFor(RecipeType.SMELTING,
                         new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()), level);
-    }
-
-    private boolean canInsertItemIntoOutputSlot(ItemStack output) {
-        return inventory.getResource(OUTPUT_SLOT).isEmpty() ||
-                inventory.getResource(OUTPUT_SLOT).is(output.getItem());
-    }
-
-    private boolean canInsertAmountIntoOutputSlot(int count) {
-        int maxCount = inventory.getResource(OUTPUT_SLOT).isEmpty() ? 64 : inventory.getResource(OUTPUT_SLOT).getMaxStackSize();
-        int currentCount = inventory.getAmountAsInt(OUTPUT_SLOT);
-
-        return maxCount >= currentCount + count;
-    }
-
-    private boolean isOutputSlotEmptyOrReceivable() {
-        return inventory.getResource(OUTPUT_SLOT).isEmpty() ||
-                inventory.getResource(OUTPUT_SLOT).test(stack -> stack.count() < stack.getMaxStackSize());
     }
 
     private boolean hasCraftingFinished() {

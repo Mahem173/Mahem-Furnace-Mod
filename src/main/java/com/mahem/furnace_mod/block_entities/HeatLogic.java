@@ -5,18 +5,17 @@ public class HeatLogic {
     protected int addHeat;
     protected int deductHeat;
 
-    public boolean conduction(boolean isLit) {
+    public void conduction(boolean isLit) {
         if (isLit) {
             totalHeat += addHeat;
-            System.out.println("Heatin Up");
+            //System.out.println("Heatin Up");
         } else {
             totalHeat -= deductHeat;
-            System.out.println("Coolin Down");
+            //System.out.println("Coolin Down");
         }
         if (totalHeat <= 0) {
             totalHeat = 0;
         }
-        return isLit;
     }
 
     public void setAddHeat(int value) {
