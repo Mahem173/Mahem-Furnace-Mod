@@ -4,9 +4,11 @@ public class HeatLogic {
     protected int totalHeat;
     protected int addHeat;
     protected int deductHeat;
+    protected int ceilHeat;
 
     public void conduction(boolean isLit) {
         if (isLit) {
+            if (totalHeat > ceilHeat) {return;}
             totalHeat += addHeat;
             //System.out.println("Heatin Up");
         } else {
@@ -16,10 +18,19 @@ public class HeatLogic {
         if (totalHeat <= 0) {
             totalHeat = 0;
         }
+        //System.out.println("Heat:" +  totalHeat);
     }
 
-    public void setAddHeat(int value) {
+    public void setHeatValue(int value) {
         this.addHeat = value;
-        System.out.println(this.totalHeat);
+        this.deductHeat = value;
+    }
+
+    public void setCeilHeat(int value) {
+        this.ceilHeat = value;
+    }
+
+    public int getTotalHeat() {
+        return this.totalHeat;
     }
 }

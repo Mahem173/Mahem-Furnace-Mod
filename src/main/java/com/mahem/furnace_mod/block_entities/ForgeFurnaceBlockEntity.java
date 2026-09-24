@@ -46,9 +46,16 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         }
     };
 
-    /*public IItemHandler getItemHandler() {
-        return itemHandler;
-    }*/
+    /* CURRENT PROBLEMS
+        1. NO ARROW OR FIRE IN SCREEN
+        2. HOPPERS ARE BUGGY (NOT MY BUG I THINK)
+        */
+
+        /*
+        TO ADD
+        1. XP REWARD
+
+         */
 
     private final int SIZE = 3;
     private NonNullList<ItemStack> items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
@@ -57,9 +64,9 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
     private static final int FUEL_SLOT = 1;
     private static final int OUTPUT_SLOT = 2;
 
-    private final ContainerData data;
+    public final ContainerData data;
     private int progress = 0;
-    private int maxProgress = 200;
+    private int maxProgress = 2000;
     private int litTimeRemaining = 0;
     private int totalLitTime = 0;
 
@@ -67,7 +74,8 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     public ForgeFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
         super(FORGE_FURNACE_ENTITY.get(), worldPosition, blockState);
-        this.heatLogic.setAddHeat(10);
+        this.heatLogic.setHeatValue(10);
+        this.heatLogic.setCeilHeat(20000);
         this.data = new ContainerData() {
             @Override
             public int get(int dataId) {
@@ -85,12 +93,16 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
                 switch (dataId) {
                     case 0:
                         ForgeFurnaceBlockEntity.this.progress = value;
+                        break;
                     case 1:
                         ForgeFurnaceBlockEntity.this.maxProgress = value;
+                        break;
                     case 2:
                         ForgeFurnaceBlockEntity.this.litTimeRemaining = value;
+                        break;
                     case 3:
                         ForgeFurnaceBlockEntity.this.totalLitTime = value;
+                        break;
                 }
             }
 
@@ -165,9 +177,11 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         ItemStack ingredient = inventory.getResource(INPUT_SLOT).toStack();
         ItemStack fuel = inventory.getResource(FUEL_SLOT).toStack();
         ItemStack result = inventory.getResource(OUTPUT_SLOT).toStack();
-
         this.heatLogic.conduction(level.getBlockState(worldPosition).getValue(LIT));
         boolean isLit;
+
+        /*System.out.println("Progress:" +  progress + "/" + maxProgress);
+        System.out.println("Lit:" +  litTimeRemaining + "/" + totalLitTime);*/
 
         if (litTimeRemaining > 0) {
             isLit = true;
@@ -176,11 +190,9 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
             isLit = false;
         }
 
-        System.out.println("Progress:" +  progress + "/" + maxProgress);
-        System.out.println("Lit:" +  litTimeRemaining + "/" + totalLitTime);
-
         SingleRecipeInput input = new SingleRecipeInput(ingredient);
         Optional<RecipeHolder<SmeltingRecipe>> recipe = serverLevel.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, serverLevel);
+
         if (recipe.isEmpty()) {
             resetProgress();
             if (isLit) {
@@ -189,18 +201,12 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
             else {
                 level.setBlockAndUpdate(pos, state.setValue(LIT, false));
             }
-
-            return;
         }
 
-        ItemStack burnResult = recipe.get().value().assemble(new SingleRecipeInput(ingredient));
-        int maxStackSize = burnResult.getMaxStackSize();
+        else {
+            ItemStack burnResult = recipe.get().value().assemble(new SingleRecipeInput(ingredient));
+            int maxStackSize = burnResult.getMaxStackSize();
 
-        /* CURRENT PROBLEMS
-        1. NO ARROW OR FIRE IN SCREEN
-        */
-
-        if (hasRecipe()) {
             if (isLit) {
                 increaseCraftingProgress();
 
@@ -215,8 +221,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
                 totalLitTime = entity.getBurnDuration(level.fuelValues(), fuel);
                 litTimeRemaining = totalLitTime;
                 level.setBlockAndUpdate(pos, state.setValue(LIT, true));
-            }
-            else if (!isLit && !hasFuel()) {
+            } else if (!isLit && !hasFuel()) {
                 resetProgress();
                 level.setBlockAndUpdate(pos, state.setValue(LIT, false));
             }
@@ -230,7 +235,6 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         }
     }
 
-    // This checks if burning can initiate without overflowing stack in result slot
     private static boolean canStartSmelting(ItemStack result, int maxStackSize, ItemStack burnResult) {
         if (result.isEmpty()) {
             return true;
@@ -282,12 +286,20 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
     }
 
     private void increaseCraftingProgress() {
-        progress++;
+        int currentHeat = this.heatLogic.getTotalHeat();
+        if (currentHeat == 0) {
+            progress += 10;
+        }
+        else if (currentHeat > 0) {
+            int heatConstant = currentHeat / 2000;
+            progress += 10 + heatConstant;
+        }
+        else {progress += 10;}
     }
 
     private void resetProgress() {
         progress = 0;
-        maxProgress = 200;
+        maxProgress = 2000;
     }
 
     /* BLOCK ENTITY SYNC */

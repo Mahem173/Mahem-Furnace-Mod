@@ -28,7 +28,7 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     }
 
     public ForgeFurnaceMenu(int pContainerId, Inventory inv, BlockEntity blockEntity) {
-        this(pContainerId, RecipePropertySet.FURNACE_INPUT, inv, blockEntity, ((ForgeFurnaceBlockEntity) blockEntity).inventory, new SimpleContainerData(4));
+        this(pContainerId, RecipePropertySet.FURNACE_INPUT, inv, blockEntity, ((ForgeFurnaceBlockEntity) blockEntity).inventory, ((ForgeFurnaceBlockEntity) blockEntity).data);
     }
 
     public ForgeFurnaceMenu(int pContainerId, ResourceKey<RecipePropertySet> allowedInputs, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
@@ -46,9 +46,7 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
         this.addSlot(new ResourceHandlerSlot(handler, handler::set, 1,  56, 53) {
             @Override
             public boolean mayPlace(ItemStack itemStack) {
-                 if (isFuel(itemStack)) {
-                     return true;
-                 } else return false;
+                return isFuel(itemStack);
             }
         });
         this.addSlot(new ResourceHandlerSlot(handler, handler::set,2, 116, 35) {
@@ -70,16 +68,16 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     }
 
     public boolean isCrafting() {
-        return data.get(0) > 0;
+        return this.data.get(0) > 0;
     }
 
-    public float getBurnProgress() {
+    public float getLitProgress() {
         int current = this.data.get(2);
         int total = this.data.get(3);
         return total != 0 && current != 0 ? Mth.clamp((float)current / (float)total, 0.0F, 1.0F) : 0.0F;
     }
 
-    public float getLitProgress() {
+    public float getSmeltingProgress() {
         int litDuration = this.data.get(1);
         if (litDuration == 0) {
             litDuration = 200;
@@ -89,69 +87,54 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     }
 
     // CREDIT GOES TO: diesieben07 | https://github.com/diesieben07/SevenCommons
-    // must assign a slot number to each of the slots used by the GUI.
-    // For this container, we can see both the tile inventory's slots as well as the player inventory slots and the hotbar.
-    // Each time we add a Slot to the container, it automatically increases the slotIndex, which means
-    //  0 - 8 = hotbar slots (which will map to the InventoryPlayer slot numbers 0 - 8)
-    //  9 - 35 = player inventory slots (which map to the InventoryPlayer slot numbers 9 - 35)
-    //  36 - 44 = TileInventory slots, which map to our TileEntity slot numbers 0 - 8)
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
-    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
-    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
+    private static final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT; // 27
+    private static final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT; //36
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
-    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
-
-    // THIS YOU HAVE TO DEFINE!
+    private static final int TE_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT; // 36
     private static final int TE_INVENTORY_SLOT_COUNT = 3;  // must be the number of slots you have!
 
-    @Override
+    /*
+    Ingredient Slot = 36
+    Fuel Slot = 37
+    Result Slot = 38
+     */
+
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
-        ItemStack clicked = ItemStack.EMPTY;
-        Slot slot = this.slots.get(pIndex);
-        if (slot != null && slot.hasItem()) {
-            ItemStack stack = slot.getItem();
-            clicked = stack.copy();
-            if (pIndex == 2) {
-                if (!this.moveItemStackTo(stack, 3, 39, true)) {
-                    return ItemStack.EMPTY;
-                }
+        Slot sourceSlot = slots.get(pIndex);
+        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
+        ItemStack sourceStack = sourceSlot.getItem();
+        ItemStack copyOfSourceStack = sourceStack.copy();
 
-                slot.onQuickCraft(stack, clicked);
-            } else if (pIndex != 1 && pIndex != 0) {
-                if (this.canSmelt(stack)) {
-                    if (!this.moveItemStackTo(stack, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (this.isFuel(stack)) {
-                    if (!this.moveItemStackTo(stack, 1, 2, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (pIndex >= 3 && pIndex < 30) {
-                    if (!this.moveItemStackTo(stack, 30, 39, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                } else if (pIndex >= 30 && pIndex < 39 && !this.moveItemStackTo(stack, 3, 30, false)) {
-                    return ItemStack.EMPTY;
-                }
-            } else if (!this.moveItemStackTo(stack, 3, 39, false)) {
+        // Check if the slot clicked is one of the vanilla container slots, pIndex < 36
+        if (pIndex < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
+            // This is a vanilla container slot so merge the stack into the tile inventory, 36 -> 39
+            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX
+                    + TE_INVENTORY_SLOT_COUNT, false)) {
+
+                return ItemStack.EMPTY; // EMPTY_ITEM
+            }
+
+            // This checks the tile entity slot clicks, 35 < pIndex < 39
+        } else if (pIndex < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
+            // This is a TE slot so merge the stack into the players inventory
+            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
-
-            if (stack.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-            if (stack.getCount() == clicked.getCount()) {
-                return ItemStack.EMPTY;
-            }
-
-            slot.onTake(playerIn, stack);
+        } else {
+            System.out.println("Invalid slotIndex:" + pIndex);
+            return ItemStack.EMPTY;
         }
-
-        return clicked;
+        // If stack size == 0 (the entire stack was moved) set slot contents to null
+        if (sourceStack.getCount() == 0) {
+            sourceSlot.set(ItemStack.EMPTY);
+        } else {
+            sourceSlot.setChanged();
+        }
+        sourceSlot.onTake(playerIn, sourceStack);
+        return copyOfSourceStack;
     }
 
     @Override
