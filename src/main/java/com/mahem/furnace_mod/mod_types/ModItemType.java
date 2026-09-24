@@ -8,7 +8,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import static com.mahem.furnace_mod.FurnaceMod.MODID;
 
-
 // Here go standalone non-block items
 public class ModItemType {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);

@@ -9,7 +9,6 @@ import net.minecraft.client.data.models.MultiVariant;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
-import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.renderer.block.dispatch.VariantMutator;
 import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
@@ -31,7 +30,6 @@ public class ModModelProvider extends ModelProvider  {
         List<Block> furnaces = List.of(
                 ModBlockType.FORGE_FURNACE.get()
         );
-
 
         PropertyDispatch<VariantMutator> HORIZONTAL_FACING = PropertyDispatch.modify(BlockStateProperties.HORIZONTAL_FACING)
                 .select(Direction.EAST, BlockModelGenerators.Y_ROT_90)

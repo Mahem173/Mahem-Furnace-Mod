@@ -11,6 +11,8 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -28,25 +30,15 @@ public class FurnaceMod {
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-
-        // Sorting will be needed probably
         ModCreativeModeTab.register(modEventBus);
 
         ModBlockType.register(modEventBus);
         ModItemType.register(modEventBus);
 
         ModDataComponent.register(modEventBus);
-        //ModStats.register(modEventBus);
-
-        //ModSounds.register(modEventBus);
-        //ModEffects.register(modEventBus);
-
-        //ModPotions.register(modEventBus);
-        //ModVillagers.register(modEventBus);
-
         ModBlockEntityType.register(modEventBus);
-        ModMenuType.register(modEventBus);
 
+        ModMenuType.register(modEventBus);
         ModRecipeType.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
@@ -55,11 +47,21 @@ public class FurnaceMod {
         NeoForge.EVENT_BUS.register(this);
 
         // Register the item to a creative tab
-        //modEventBus.addListener(this::addCreative);
+        modEventBus.addListener(this::addCreative);
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
+
+    // Hoppers are broken lol
+
+    /*private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+                Capabilities.Item.BLOCK,
+                ModBlockEntityType.FORGE_FURNACE_ENTITY.get(),
+                (forgeFurnaceBlockEntity, side) -> forgeFurnaceBlockEntity.getItemHandler()
+        );
+    }*/
 
     private void commonSetup(FMLCommonSetupEvent event) {
     }
@@ -68,7 +70,6 @@ public class FurnaceMod {
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(FORGE_FURNACE);
-            //event.accept(ADAPTING_FURNACE_ITEM);
         }
     }
 
