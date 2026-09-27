@@ -1,4 +1,4 @@
-package com.mahem.mahems_furnaces.block_entities;
+package com.mahem.mahems_furnaces.internal_logic;
 
 public class HeatLogic {
     protected int totalHeat;
@@ -7,8 +7,7 @@ public class HeatLogic {
     protected int ceilHeat;
 
     public void conduction(boolean isLit) {
-        if (isLit) {
-            if (totalHeat > ceilHeat) {return;}
+        if (isLit && totalHeat <= ceilHeat) {
             totalHeat += addHeat;
             //System.out.println("Heatin Up");
         } else {

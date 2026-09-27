@@ -1,6 +1,8 @@
 package com.mahem.mahems_furnaces.mod_types;
 
 import com.mahem.mahems_furnaces.menus.ForgeFurnaceMenu;
+import com.mahem.mahems_furnaces.menus.PressurisedFurnaceMenu;
+import com.mahem.mahems_furnaces.menus.RefinedFurnaceMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -11,10 +13,16 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class ModMenuType {
-    private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, "furnace_mod");
+    private static final DeferredRegister<MenuType<?>> MENU_TYPES = DeferredRegister.create(Registries.MENU, "mahems_furnaces");
 
     public static final DeferredHolder<MenuType<?>, MenuType<ForgeFurnaceMenu>> FORGE_FURNACE_MENU =
             registerMenuType("forge_furnace_menu", ForgeFurnaceMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<RefinedFurnaceMenu>> REFINED_FURNACE_MENU =
+            registerMenuType("refined_furnace_menu", RefinedFurnaceMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<PressurisedFurnaceMenu>> PRESSURISED_FURNACE_MENU =
+            registerMenuType("pressurised_furnace_menu", PressurisedFurnaceMenu::new);
 
     private static <T extends AbstractContainerMenu>DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name,IContainerFactory<T> factory) {
         return MENU_TYPES.register(name, () -> IMenuTypeExtension.create(factory));

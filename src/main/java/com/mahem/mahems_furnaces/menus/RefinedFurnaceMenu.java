@@ -1,12 +1,15 @@
 package com.mahem.mahems_furnaces.menus;
 
-import com.mahem.mahems_furnaces.block_entities.ForgeFurnaceBlockEntity;
+import com.mahem.mahems_furnaces.block_entities.RefinedFurnaceBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipePropertySet;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -14,27 +17,28 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
-import static com.mahem.mahems_furnaces.mod_types.ModBlockType.FORGE_FURNACE;
-import static com.mahem.mahems_furnaces.mod_types.ModMenuType.FORGE_FURNACE_MENU;
 
-public class ForgeFurnaceMenu extends AbstractContainerMenu {
-    public final ForgeFurnaceBlockEntity blockEntity;
+import static com.mahem.mahems_furnaces.mod_types.ModBlockType.REFINED_FURNACE;
+import static com.mahem.mahems_furnaces.mod_types.ModMenuType.REFINED_FURNACE_MENU;
+
+public class RefinedFurnaceMenu extends AbstractContainerMenu {
+    public final RefinedFurnaceBlockEntity blockEntity;
     private final Level level;
     private final ContainerData data;
     private final RecipePropertySet acceptedInputs;
 
-    public ForgeFurnaceMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
+    public RefinedFurnaceMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
     }
 
-    public ForgeFurnaceMenu(int pContainerId, Inventory inv, BlockEntity blockEntity) {
-        this(pContainerId, RecipePropertySet.FURNACE_INPUT, inv, blockEntity, ((ForgeFurnaceBlockEntity) blockEntity).inventory, ((ForgeFurnaceBlockEntity) blockEntity).data);
+    public RefinedFurnaceMenu(int pContainerId, Inventory inv, BlockEntity blockEntity) {
+        this(pContainerId, RecipePropertySet.FURNACE_INPUT, inv, blockEntity, ((RefinedFurnaceBlockEntity) blockEntity).inventory, ((RefinedFurnaceBlockEntity) blockEntity).data);
     }
 
-    public ForgeFurnaceMenu(int pContainerId, ResourceKey<RecipePropertySet> allowedInputs, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
-        super(FORGE_FURNACE_MENU.get(), pContainerId);
+    public RefinedFurnaceMenu(int pContainerId, ResourceKey<RecipePropertySet> allowedInputs, Inventory inv, BlockEntity entity, ItemStacksResourceHandler handler, ContainerData data) {
+        super(REFINED_FURNACE_MENU.get(), pContainerId);
 
-        blockEntity = ((ForgeFurnaceBlockEntity) entity);
+        blockEntity = ((RefinedFurnaceBlockEntity) entity);
         this.level = inv.player.level();
         this.data = data;
         this.acceptedInputs = this.level.recipeAccess().propertySet(allowedInputs);
@@ -96,6 +100,7 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     Ingredient Slot = 36
     Fuel Slot = 37
     Result Slot = 38
+
      */
 
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
@@ -136,7 +141,7 @@ public class ForgeFurnaceMenu extends AbstractContainerMenu {
     @Override
     public boolean stillValid(Player pPlayer) {
         return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()),
-                pPlayer, FORGE_FURNACE.get());
+                pPlayer, REFINED_FURNACE.get());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

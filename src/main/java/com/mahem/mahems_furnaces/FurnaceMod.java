@@ -11,11 +11,16 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import org.slf4j.Logger;
 
+import static com.mahem.mahems_furnaces.mod_types.ModBlockEntityType.FORGE_FURNACE_ENTITY;
 import static com.mahem.mahems_furnaces.mod_types.ModBlockType.*;
 
 @Mod(FurnaceMod.MODID)
@@ -40,7 +45,6 @@ public class FurnaceMod {
         ModRecipeType.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in.
-        // Note that this is necessary if and only if we want *this* class (ExampleMod) to respond directly to events.
         // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
         NeoForge.EVENT_BUS.register(this);
 
@@ -53,11 +57,12 @@ public class FurnaceMod {
 
     // Hoppers are broken lol
 
-    /*private static void registerCapabilities(RegisterCapabilitiesEvent event) {
+    /*@SubscribeEvent
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(
                 Capabilities.Item.BLOCK,
-                ModBlockEntityType.FORGE_FURNACE_ENTITY.get(),
-                (forgeFurnaceBlockEntity, side) -> forgeFurnaceBlockEntity.getItemHandler()
+                FORGE_FURNACE_ENTITY,
+                (be, side) -> VanillaContainerWrapper.of()
         );
     }*/
 

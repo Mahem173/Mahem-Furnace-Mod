@@ -20,6 +20,8 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         var enchantments = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
 
         dropSelf(ModBlockType.FORGE_FURNACE.get());
+        dropSelf(ModBlockType.REFINED_FURNACE.get());
+        dropSelf(ModBlockType.PRESSURISED_FURNACE.get());
     }
 
     @Override

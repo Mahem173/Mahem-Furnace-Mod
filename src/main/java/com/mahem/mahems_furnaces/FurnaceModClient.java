@@ -1,6 +1,8 @@
 package com.mahem.mahems_furnaces;
 
 import com.mahem.mahems_furnaces.client.screens.ForgeFurnaceScreen;
+import com.mahem.mahems_furnaces.client.screens.PressurisedFurnaceScreen;
+import com.mahem.mahems_furnaces.client.screens.RefinedFurnaceScreen;
 import com.mahem.mahems_furnaces.mod_types.ModMenuType;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
@@ -32,6 +34,8 @@ public class FurnaceModClient {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuType.FORGE_FURNACE_MENU.get(), ForgeFurnaceScreen::new);
+        event.register(ModMenuType.REFINED_FURNACE_MENU.get(), RefinedFurnaceScreen::new);
+        event.register(ModMenuType.PRESSURISED_FURNACE_MENU.get(), PressurisedFurnaceScreen::new);
 
 
     }

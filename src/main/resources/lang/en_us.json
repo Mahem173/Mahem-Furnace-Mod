@@ -1,8 +1,12 @@
 {
-  "itemGroup.furnace_mod": "Furnace Mod Tab",
+  "itemGroup.mahems_furnaces": "Furnace Mod Tab",
 
-  "block.furnace_mod.forge_furnace": "Forge Furnace",
+  "block.mahems_furnaces.forge_furnace": "Forge Furnace",
   "container.forge_furnace": "Forge Furnace",
+  "block.mahems_furnaces.refined_furnace": "Refined Furnace",
+  "container.refined_furnace": "Refined Furnace",
+  "block.mahems_furnaces.pressurised_furnace": "Pressurised Furnace",
+  "container.pressurised_furnace": "Pressurised Furnace",
 
 
 
@@ -10,12 +14,12 @@
 
 
 
-  "furnace_mod.configuration.title": "Furnace Mod Configs",
-  "furnace_mod.configuration.section.furnace_mod.common.toml": "Furnace Mod Configs",
-  "furnace_mod.configuration.section.furnace_mod.common.toml.title": "Furnace Mod Configs",
-  "furnace_mod.configuration.items": "Item List",
-  "furnace_mod.configuration.logDirtBlock": "Log Dirt Block",
-  "furnace_mod.configuration.magicNumberIntroduction": "Magic Number Text",
-  "furnace_mod.configuration.magicNumber": "Magic Number",
-  "creativetab.furnace_mod.furnace_blocks": "Furnace Mod Blocks"
+  "mahems_furnaces.configuration.title": "Furnace Mod Configs",
+  "mahems_furnaces.configuration.section.mahems_furnaces.common.toml": "Furnace Mod Configs",
+  "mahems_furnaces.configuration.section.mahems_furnaces.common.toml.title": "Furnace Mod Configs",
+  "mahems_furnaces.configuration.items": "Item List",
+  "mahems_furnaces.configuration.logDirtBlock": "Log Dirt Block",
+  "mahems_furnaces.configuration.magicNumberIntroduction": "Magic Number Text",
+  "mahems_furnaces.configuration.magicNumber": "Magic Number",
+  "creativetab.mahems_furnaces.furnace_blocks": "Furnace Mod Blocks"
 }

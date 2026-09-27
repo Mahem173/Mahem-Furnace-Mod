@@ -1,6 +1,6 @@
 package com.mahem.mahems_furnaces.blocks;
 
-import com.mahem.mahems_furnaces.block_entities.ForgeFurnaceBlockEntity;
+import com.mahem.mahems_furnaces.block_entities.RefinedFurnaceBlockEntity;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -19,7 +19,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.*;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -30,14 +32,14 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nullable;
 
-import static com.mahem.mahems_furnaces.mod_types.ModBlockEntityType.FORGE_FURNACE_ENTITY;
+import static com.mahem.mahems_furnaces.mod_types.ModBlockEntityType.REFINED_FURNACE_ENTITY;
 
-public class ForgeFurnaceBlock extends BaseEntityBlock {
+public class RefinedFurnaceBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
-    public static final MapCodec<ForgeFurnaceBlock> CODEC = simpleCodec(ForgeFurnaceBlock::new);
+    public static final MapCodec<RefinedFurnaceBlock> CODEC = simpleCodec(RefinedFurnaceBlock::new);
 
-    public ForgeFurnaceBlock(Properties properties) {
+    public RefinedFurnaceBlock(Properties properties) {
         super(properties);
     }
 
@@ -45,7 +47,6 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
-
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
@@ -59,14 +60,14 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
 
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos worldPosition, BlockState blockState) {
-        return new ForgeFurnaceBlockEntity(worldPosition, blockState);
+        return new RefinedFurnaceBlockEntity(worldPosition, blockState);
     }
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
                                        ItemStack toolStack, boolean willHarvest, FluidState fluid) {
-        if (level.getBlockEntity(pos) instanceof ForgeFurnaceBlockEntity forgeFurnaceBlockEntity) {
-            forgeFurnaceBlockEntity.drops();
+        if (level.getBlockEntity(pos) instanceof RefinedFurnaceBlockEntity refinedFurnaceBlockEntity) {
+            refinedFurnaceBlockEntity.drops();
         }
         return super.onDestroyedByPlayer(state, level, pos, player, toolStack, willHarvest, fluid);
     }
@@ -86,8 +87,8 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
                                                Player player, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
             BlockEntity entity = level.getBlockEntity(pos);
-            if(entity instanceof ForgeFurnaceBlockEntity forgeFurnaceBlockEntity) {
-                player.openMenu(new SimpleMenuProvider(forgeFurnaceBlockEntity, Component.translatable("block.mahems_furnaces.forge_furnace")), pos);
+            if(entity instanceof RefinedFurnaceBlockEntity refinedFurnaceBlockEntity) {
+                player.openMenu(new SimpleMenuProvider(refinedFurnaceBlockEntity, Component.translatable("block.mahems_furnaces.refined_furnace")), pos);
             } else {
                 throw new IllegalStateException("Our Container provider is missing!");
             }
@@ -101,7 +102,7 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
             return null;
         }
 
-        return createTickerHelper(type, FORGE_FURNACE_ENTITY.get(), (level1, pos, state, entity) ->
+        return createTickerHelper(type, REFINED_FURNACE_ENTITY.get(), (level1, pos, state, entity) ->
                 entity.tick(level1, pos, state, entity));
     }
 
@@ -115,7 +116,7 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
         double yPos = pos.getY();
         double zPos = (double)pos.getZ() + 0.5;
         if (random.nextDouble() < 0.15) {
-            level.playLocalSound(xPos, yPos, zPos, SoundEvents.BLASTFURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0f, 1.0f, false);
+            level.playLocalSound(xPos, yPos, zPos, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 1.0f, 1.0f, false);
         }
 
         Direction direction = state.getValue(FACING);
@@ -126,10 +127,10 @@ public class ForgeFurnaceBlock extends BaseEntityBlock {
         double yOffset = random.nextDouble() * 6.0 / 8.0;
         double zOffset = axis == Direction.Axis.Z ? (double)direction.getStepZ() * 0.52 : defaultOffset;
 
-        level.addParticle(ParticleTypes.SMOKE, xPos + xOffsets, yPos + yOffset, zPos + zOffset, 0.0, 0.0, 0.0);
+        level.addParticle(ParticleTypes.DUST_PLUME, xPos + xOffsets, yPos + yOffset, zPos + zOffset, 0.0, 0.0, 0.0);
 
-        if(level.getBlockEntity(pos) instanceof ForgeFurnaceBlockEntity forgeFurnaceBlockEntity && !forgeFurnaceBlockEntity.inventory.getResource(1).isEmpty()) {
-            level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, forgeFurnaceBlockEntity.inventory.getResource(1).getItem()),
+        if(level.getBlockEntity(pos) instanceof RefinedFurnaceBlockEntity refinedFurnaceBlockEntity && !refinedFurnaceBlockEntity.inventory.getResource(1).isEmpty()) {
+            level.addParticle(new ItemParticleOption(ParticleTypes.ITEM, refinedFurnaceBlockEntity.inventory.getResource(1).getItem()),
                     xPos + xOffsets, yPos + yOffset, zPos + zOffset, 0.0, 0.0, 0.0);
         }
     }

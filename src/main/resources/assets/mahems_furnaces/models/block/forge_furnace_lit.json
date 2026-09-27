@@ -1,10 +1,10 @@
 {
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
-	"parent": "furnace_mod:block/forge_furnace",
+	"parent": "mahems_furnaces:block/forge_furnace",
 	"textures": {
-		"0": "furnace_mod:block/forge_furnace_lit",
-		"particle": "furnace_mod:block/forge_furnace_lit"
+		"0": "mahems_furnaces:block/forge_furnace_lit",
+		"particle": "mahems_furnaces:block/forge_furnace_lit"
 	},
 	"elements": [
 		{

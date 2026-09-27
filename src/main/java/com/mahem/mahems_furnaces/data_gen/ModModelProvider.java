@@ -28,7 +28,9 @@ public class ModModelProvider extends ModelProvider  {
     protected void registerModels(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
 
         List<Block> furnaces = List.of(
-                ModBlockType.FORGE_FURNACE.get()
+                ModBlockType.FORGE_FURNACE.get(),
+                ModBlockType.REFINED_FURNACE.get(),
+                ModBlockType.PRESSURISED_FURNACE.get()
         );
 
         PropertyDispatch<VariantMutator> HORIZONTAL_FACING = PropertyDispatch.modify(BlockStateProperties.HORIZONTAL_FACING)

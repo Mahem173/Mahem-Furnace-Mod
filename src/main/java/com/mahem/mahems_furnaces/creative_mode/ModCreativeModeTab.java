@@ -15,13 +15,13 @@ public class ModCreativeModeTab {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, FurnaceMod.MODID);
 
     public static final Supplier<CreativeModeTab> FURNACE_TAB = CREATIVE_MODE_TABS.register("furnace_tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("creativetab.furnace_mod.furnace_blocks"))
+            .title(Component.translatable("creativetab.mahems_furnaces.furnace_blocks"))
             .icon(() -> new ItemStack(ModBlockType.FORGE_FURNACE.get()))
             .displayItems((itemDisplayParameters, output)->{
                 output.accept(ModBlockType.FORGE_FURNACE);
-               /* output.accept(ModBlockType.REFINED_FURNACE_ITEM);
+                output.accept(ModBlockType.REFINED_FURNACE_ITEM);
                 output.accept(ModBlockType.PRESSURISED_FURNACE_ITEM);
-                output.accept(ModBlockType.LAVA_FURNACE_ITEM);
+                /*output.accept(ModBlockType.LAVA_FURNACE_ITEM);
                 output.accept(ModBlockType.BRITTLE_FURNACE_ITEM);
                 output.accept(ModBlockType.METALLURGIC_FURNACE_ITEM);
                 output.accept(ModBlockType.WISE_FURNACE_ITEM);

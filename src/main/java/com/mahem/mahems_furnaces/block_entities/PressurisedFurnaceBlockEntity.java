@@ -1,7 +1,7 @@
 package com.mahem.mahems_furnaces.block_entities;
 
 import com.mahem.mahems_furnaces.internal_logic.HeatLogic;
-import com.mahem.mahems_furnaces.menus.ForgeFurnaceMenu;
+import com.mahem.mahems_furnaces.menus.PressurisedFurnaceMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
@@ -35,28 +35,18 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
-import static com.mahem.mahems_furnaces.blocks.ForgeFurnaceBlock.LIT;
-import static com.mahem.mahems_furnaces.mod_types.ModBlockEntityType.FORGE_FURNACE_ENTITY;
+import static com.mahem.mahems_furnaces.blocks.PressurisedFurnaceBlock.LIT;
+import static com.mahem.mahems_furnaces.mod_types.ModBlockEntityType.PRESSURISED_FURNACE_ENTITY;
 
-public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
+public class PressurisedFurnaceBlockEntity extends BaseContainerBlockEntity {
     public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(3) {
         @Override
         protected void onContentsChanged(int index, @NonNull ItemStack previousContents) {
             super.onContentsChanged(index, previousContents);
-            ForgeFurnaceBlockEntity.this.setChanged();
+            PressurisedFurnaceBlockEntity.this.setChanged();
         }
     };
 
-    /* CURRENT PROBLEMS
-        1. NO ARROW OR FIRE IN SCREEN
-        2. HOPPERS ARE BUGGY (NOT MY BUG I THINK)
-        */
-
-        /*
-        TO ADD
-        1. XP REWARD
-
-         */
 
     private final int SIZE = 3;
     private NonNullList<ItemStack> items = NonNullList.withSize(SIZE, ItemStack.EMPTY);
@@ -73,18 +63,18 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     private final HeatLogic heatLogic = new HeatLogic();
 
-    public ForgeFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
-        super(FORGE_FURNACE_ENTITY.get(), worldPosition, blockState);
-        this.heatLogic.setHeatValue(10);
-        this.heatLogic.setCeilHeat(20000);
+    public PressurisedFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
+        super(PRESSURISED_FURNACE_ENTITY.get(), worldPosition, blockState);
+        this.heatLogic.setHeatValue(300);
+        this.heatLogic.setCeilHeat(40000);
         this.data = new ContainerData() {
             @Override
             public int get(int dataId) {
                 return switch (dataId) {
-                    case 0 -> ForgeFurnaceBlockEntity.this.progress;
-                    case 1 -> ForgeFurnaceBlockEntity.this.maxProgress;
-                    case 2 -> ForgeFurnaceBlockEntity.this.litTimeRemaining;
-                    case 3 -> ForgeFurnaceBlockEntity.this.totalLitTime;
+                    case 0 -> PressurisedFurnaceBlockEntity.this.progress;
+                    case 1 -> PressurisedFurnaceBlockEntity.this.maxProgress;
+                    case 2 -> PressurisedFurnaceBlockEntity.this.litTimeRemaining;
+                    case 3 -> PressurisedFurnaceBlockEntity.this.totalLitTime;
                     default -> 0;
                 };
             }
@@ -93,16 +83,16 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
             public void set(int dataId, int value) {
                 switch (dataId) {
                     case 0:
-                        ForgeFurnaceBlockEntity.this.progress = value;
+                        PressurisedFurnaceBlockEntity.this.progress = value;
                         break;
                     case 1:
-                        ForgeFurnaceBlockEntity.this.maxProgress = value;
+                        PressurisedFurnaceBlockEntity.this.maxProgress = value;
                         break;
                     case 2:
-                        ForgeFurnaceBlockEntity.this.litTimeRemaining = value;
+                        PressurisedFurnaceBlockEntity.this.litTimeRemaining = value;
                         break;
                     case 3:
-                        ForgeFurnaceBlockEntity.this.totalLitTime = value;
+                        PressurisedFurnaceBlockEntity.this.totalLitTime = value;
                         break;
                 }
             }
@@ -116,7 +106,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     @Override
     public @NonNull Component getDefaultName() {
-        return Component.translatable("block.furnace_mod.forge_furnace");
+        return Component.translatable("block.mahems_furnaces.pressurised_furnace");
     }
 
     @Override
@@ -136,7 +126,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int containerId, @NonNull Inventory inventory, @NonNull Player player) {
-        return new ForgeFurnaceMenu(containerId, inventory, this);
+        return new PressurisedFurnaceMenu(containerId, inventory, this);
     }
 
     @Override
@@ -174,7 +164,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         Containers.dropContents(this.level, this.worldPosition, inv);
     }
 
-    public void tick(Level level, BlockPos pos, BlockState state, ForgeFurnaceBlockEntity entity) {
+    public void tick(Level level, BlockPos pos, BlockState state, PressurisedFurnaceBlockEntity entity) {
         ServerLevel serverLevel = (ServerLevel) level;
         ItemStack ingredient = inventory.getResource(INPUT_SLOT).toStack();
         ItemStack fuel = inventory.getResource(FUEL_SLOT).toStack();
@@ -193,7 +183,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         }
 
         SingleRecipeInput input = new SingleRecipeInput(ingredient);
-        Optional<RecipeHolder<SmeltingRecipe>> recipe = serverLevel.recipeAccess().getRecipeFor(RecipeType.SMELTING, input, serverLevel);
+        Optional<RecipeHolder<BlastingRecipe>> recipe = serverLevel.recipeAccess().getRecipeFor(RecipeType.BLASTING, input, serverLevel);
 
         if (recipe.isEmpty()) {
             resetProgress();
@@ -214,7 +204,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
                     craftItem();
                 }
             }
-            if (!isLit && canStartSmelting(result, maxStackSize, burnResult) && hasFuel()) {
+            if (!isLit && canStartBlasting(result, maxStackSize, burnResult) && hasFuel()) {
                 consumeFuel(inventory);
                 totalLitTime = entity.getBurnDuration(level.fuelValues(), fuel);
                 litTimeRemaining = totalLitTime;
@@ -233,7 +223,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         }
     }
 
-    private static boolean canStartSmelting(ItemStack result, int maxStackSize, ItemStack burnResult) {
+    private static boolean canStartBlasting(ItemStack result, int maxStackSize, ItemStack burnResult) {
         if (result.isEmpty()) {
             return true;
         } else if (!ItemStack.isSameItemSameComponents(result, burnResult) ) {
@@ -246,18 +236,18 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
     }
 
     protected int getBurnDuration(FuelValues fuelValues, ItemStack itemStack) {
-        return itemStack.getBurnTime(RecipeType.SMELTING, fuelValues);
+        return itemStack.getBurnTime(RecipeType.BLASTING, fuelValues);
     }
 
     private void craftItem() {
-        Optional<RecipeHolder<SmeltingRecipe>> recipe = getCurrentRecipe();
+        Optional<RecipeHolder<BlastingRecipe>> recipe = getCurrentRecipe();
         ItemStack output = recipe.get().value().assemble(new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()));
 
         try(Transaction transaction = Transaction.openRoot()) {
             ItemAccess itemAccess = ItemAccess.forHandlerIndex(inventory, OUTPUT_SLOT);
 
             inventory.extract(INPUT_SLOT, inventory.getResource(INPUT_SLOT), 1, transaction);
-            inventory.set(OUTPUT_SLOT, ItemResource.of(output), itemAccess.getAmount() + output.getCount());
+            inventory.set(OUTPUT_SLOT, ItemResource.of(output), itemAccess.getAmount() + 2 * output.getCount());
 
             transaction.commit();
         }
@@ -267,10 +257,10 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         return !inventory.getResource(FUEL_SLOT).isEmpty();
     }
 
-    private Optional<RecipeHolder<SmeltingRecipe>> getCurrentRecipe() {
+    private Optional<RecipeHolder<BlastingRecipe>> getCurrentRecipe() {
         if (!(level instanceof ServerLevel serverLevel)) return Optional.empty();
         return serverLevel.recipeAccess()
-                .getRecipeFor(RecipeType.SMELTING,
+                .getRecipeFor(RecipeType.BLASTING,
                         new SingleRecipeInput(inventory.getResource(INPUT_SLOT).toStack()), level);
     }
 
@@ -283,7 +273,7 @@ public class ForgeFurnaceBlockEntity extends BaseContainerBlockEntity {
         if (currentHeat == 0) {
             progress += 10;
         } else if (currentHeat > 0) {
-            int heatConstant = currentHeat / 2000;
+            int heatConstant = currentHeat / 7000;
             progress += 10 + heatConstant;
         } else {progress += 10;}
     }
