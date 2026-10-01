@@ -18,11 +18,11 @@ public class ModCreativeModeTab {
             .title(Component.translatable("creativetab.mahems_furnaces.furnace_blocks"))
             .icon(() -> new ItemStack(ModBlockType.FORGE_FURNACE.get()))
             .displayItems((itemDisplayParameters, output)->{
-                output.accept(ModBlockType.FORGE_FURNACE);
+                output.accept(ModBlockType.FORGE_FURNACE_ITEM);
                 output.accept(ModBlockType.REFINED_FURNACE_ITEM);
                 output.accept(ModBlockType.PRESSURISED_FURNACE_ITEM);
-                /*output.accept(ModBlockType.LAVA_FURNACE_ITEM);
-                output.accept(ModBlockType.BRITTLE_FURNACE_ITEM);
+                output.accept(ModBlockType.LAVA_FURNACE_ITEM);
+                /*output.accept(ModBlockType.BRITTLE_FURNACE_ITEM);
                 output.accept(ModBlockType.METALLURGIC_FURNACE_ITEM);
                 output.accept(ModBlockType.WISE_FURNACE_ITEM);
                 output.accept(ModBlockType.ADAPTING_FURNACE_ITEM);

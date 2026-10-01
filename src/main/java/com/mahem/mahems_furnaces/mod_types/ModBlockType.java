@@ -1,6 +1,7 @@
 package com.mahem.mahems_furnaces.mod_types;
 
 import com.mahem.mahems_furnaces.blocks.ForgeFurnaceBlock;
+import com.mahem.mahems_furnaces.blocks.LavaFurnaceBlock;
 import com.mahem.mahems_furnaces.blocks.PressurisedFurnaceBlock;
 import com.mahem.mahems_furnaces.blocks.RefinedFurnaceBlock;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -25,7 +26,6 @@ import java.util.function.Function;
 import static com.mahem.mahems_furnaces.FurnaceMod.*;
 import static com.mahem.mahems_furnaces.mod_types.ModItemType.ITEMS;
 
-
 // Here are blocks and items serialized
 public class ModBlockType {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
@@ -39,16 +39,14 @@ public class ModBlockType {
     public static final DeferredItem<BlockItem> REFINED_FURNACE_ITEM = ITEMS.registerSimpleBlockItem("refined_furnace", REFINED_FURNACE);
 
     public static final DeferredBlock<Block> PRESSURISED_FURNACE = BLOCKS.registerBlock("pressurised_furnace", properties ->
-            new PressurisedFurnaceBlock(properties
-            .strength(5f).requiresCorrectToolForDrops().sound(SoundType.IRON)));
+            new PressurisedFurnaceBlock(properties.strength(5f).requiresCorrectToolForDrops().sound(SoundType.IRON).mapColor(MapColor.DIAMOND)));
     public static final DeferredItem<BlockItem> PRESSURISED_FURNACE_ITEM = ITEMS.registerSimpleBlockItem("pressurised_furnace", PRESSURISED_FURNACE);
 
-    /*public static final DeferredBlock<Block> LAVA_FURNACE = BLOCKS.registerBlock("lava_furnace", properties ->
-            new LavaFurnaceBlock(properties
-            .strength(6f).requiresCorrectToolForDrops().sound(SoundType.IRON)));
+    public static final DeferredBlock<Block> LAVA_FURNACE = BLOCKS.registerBlock("lava_furnace", properties ->
+            new LavaFurnaceBlock(properties.strength(6f).requiresCorrectToolForDrops().sound(SoundType.IRON).mapColor(MapColor.COLOR_ORANGE)));
     public static final DeferredItem<BlockItem> LAVA_FURNACE_ITEM = ITEMS.registerSimpleBlockItem("lava_furnace", LAVA_FURNACE);
 
-    public static final DeferredBlock<Block> BRITTLE_FURNACE = BLOCKS.registerBlock("brittle_furnace", properties ->
+    /*public static final DeferredBlock<Block> BRITTLE_FURNACE = BLOCKS.registerBlock("brittle_furnace", properties ->
             new BrittleFurnaceBlock(properties
             .strength(2f).requiresCorrectToolForDrops().sound(SoundType.IRON)));
     public static final DeferredItem<BlockItem> BRITTLE_FURNACE_ITEM = ITEMS.registerSimpleBlockItem("brittle_furnace", BRITTLE_FURNACE);

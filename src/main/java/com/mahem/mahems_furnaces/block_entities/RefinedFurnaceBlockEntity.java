@@ -60,7 +60,7 @@ public class RefinedFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     public final ContainerData data;
     private int progress = 0;
-    private int maxProgress = 60;
+    private int maxProgress = 300;
     private int litTimeRemaining = 0;
     private int totalLitTime = 0;
     private int bonusCounter = 0;
@@ -69,7 +69,7 @@ public class RefinedFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     public RefinedFurnaceBlockEntity(BlockPos worldPosition, BlockState blockState) {
         super(REFINED_FURNACE_ENTITY.get(), worldPosition, blockState);
-        this.heatLogic.setHeatValue(3);
+        this.heatLogic.setHeatValue(8);
         this.heatLogic.setCeilHeat(9009);
         this.data = new ContainerData() {
             @Override
@@ -137,8 +137,6 @@ public class RefinedFurnaceBlockEntity extends BaseContainerBlockEntity {
     protected AbstractContainerMenu createMenu(int i, Inventory inventory) {
         return null;
     }
-
-
 
     @Override
     protected void saveAdditional(@NonNull ValueOutput output) {
@@ -279,7 +277,7 @@ public class RefinedFurnaceBlockEntity extends BaseContainerBlockEntity {
     private boolean bonusTracking() {
         int currentHeatInThousands = this.heatLogic.getTotalHeat() / 1000;
         int currentThreashold = 11 - currentHeatInThousands;
-        if (bonusCounter >= currentThreashold) {
+        if (bonusCounter >= Math.floor(currentThreashold)) {
             bonusCounter = 0;
             System.out.println(bonusCounter + "/" + currentThreashold);
             return true;
@@ -311,7 +309,7 @@ public class RefinedFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     private void resetProgress() {
         progress = 0;
-        maxProgress = 60;
+        maxProgress = 300;
     }
 
     /* BLOCK ENTITY SYNC */

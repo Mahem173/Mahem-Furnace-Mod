@@ -1,6 +1,7 @@
 package com.mahem.mahems_furnaces.mod_types;
 
 import com.mahem.mahems_furnaces.menus.ForgeFurnaceMenu;
+import com.mahem.mahems_furnaces.menus.LavaFurnaceMenu;
 import com.mahem.mahems_furnaces.menus.PressurisedFurnaceMenu;
 import com.mahem.mahems_furnaces.menus.RefinedFurnaceMenu;
 import net.minecraft.core.registries.Registries;
@@ -23,6 +24,9 @@ public class ModMenuType {
 
     public static final DeferredHolder<MenuType<?>, MenuType<PressurisedFurnaceMenu>> PRESSURISED_FURNACE_MENU =
             registerMenuType("pressurised_furnace_menu", PressurisedFurnaceMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<LavaFurnaceMenu>> LAVA_FURNACE_MENU =
+            registerMenuType("lava_furnace_menu", LavaFurnaceMenu::new);
 
     private static <T extends AbstractContainerMenu>DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name,IContainerFactory<T> factory) {
         return MENU_TYPES.register(name, () -> IMenuTypeExtension.create(factory));

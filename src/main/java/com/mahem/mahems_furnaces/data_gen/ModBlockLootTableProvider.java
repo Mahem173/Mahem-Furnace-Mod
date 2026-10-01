@@ -22,6 +22,7 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         dropSelf(ModBlockType.FORGE_FURNACE.get());
         dropSelf(ModBlockType.REFINED_FURNACE.get());
         dropSelf(ModBlockType.PRESSURISED_FURNACE.get());
+        dropSelf(ModBlockType.LAVA_FURNACE.get());
     }
 
     @Override

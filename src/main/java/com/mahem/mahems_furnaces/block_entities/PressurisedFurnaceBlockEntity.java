@@ -134,8 +134,6 @@ public class PressurisedFurnaceBlockEntity extends BaseContainerBlockEntity {
         return null;
     }
 
-
-
     @Override
     protected void saveAdditional(@NonNull ValueOutput output) {
         super.saveAdditional(output);

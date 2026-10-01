@@ -2,14 +2,13 @@
   "itemGroup.mahems_furnaces": "Furnace Mod Tab",
 
   "block.mahems_furnaces.forge_furnace": "Forge Furnace",
-  "container.forge_furnace": "Forge Furnace",
   "block.mahems_furnaces.refined_furnace": "Refined Furnace",
-  "container.refined_furnace": "Refined Furnace",
   "block.mahems_furnaces.pressurised_furnace": "Pressurised Furnace",
-  "container.pressurised_furnace": "Pressurised Furnace",
+  "block.mahems_furnaces.lava_furnace": "Lava Furnace",
 
-
-
+  "container.forge_furnace": "Forge Furnace",
+  "container.refined_furnace": "Refined Furnace",
+  "container.lava_furnace": "Lava Furnace",
 
 
 

@@ -20,6 +20,7 @@ public class ModBlockTagProvider extends BlockTagsProvider {
                 .add(ModBlockType.getRK(ModBlockType.FORGE_FURNACE.get()))
                 .add(ModBlockType.getRK(ModBlockType.REFINED_FURNACE.get()))
                 .add(ModBlockType.getRK(ModBlockType.PRESSURISED_FURNACE.get()))
+                .add(ModBlockType.getRK(ModBlockType.LAVA_FURNACE.get()))
 
                 ;
     }
