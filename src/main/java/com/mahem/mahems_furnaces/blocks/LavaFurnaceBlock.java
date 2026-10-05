@@ -131,7 +131,7 @@ public class LavaFurnaceBlock extends BaseEntityBlock {
         }
 
         if (state.getValue(AFTERBURNING)) {
-            if (random.nextDouble() < 0.15) {
+            if (random.nextDouble() < 0.10) {
                 level.playLocalSound(xPos, yPos, zPos, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0f, 1.0f, false);
             }
 
@@ -140,7 +140,7 @@ public class LavaFurnaceBlock extends BaseEntityBlock {
 
         }
         else if (state.getValue(LIT)) {
-            if (random.nextDouble() < 0.15) {
+            if (random.nextDouble() < 0.10) {
                 level.playLocalSound(xPos, yPos, zPos, SoundEvents.LAVA_AMBIENT, SoundSource.BLOCKS, 1.0f, 1.0f, false);
             }
 

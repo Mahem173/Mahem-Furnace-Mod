@@ -176,12 +176,18 @@ public class LavaFurnaceBlockEntity extends BaseContainerBlockEntity {
         ItemStack ingredient = inventory.getResource(INPUT_SLOT).toStack();
         ItemStack fuel = inventory.getResource(FUEL_SLOT).toStack();
         ItemStack result = inventory.getResource(OUTPUT_SLOT).toStack();
+
         this.heatLogic.conduction(level.getBlockState(worldPosition).getValue(LIT));
         boolean isLit;
+        int heatSubtractd;
+
+        if (this.heatLogic.getTotalHeat() > 120000) {
+            heatSubtractd = 8;
+        } else {heatSubtractd = 10;}
 
         if (litTimeRemaining > 0) {
             isLit = true;
-            litTimeRemaining -= 10;
+            litTimeRemaining -= heatSubtractd;
         } else {isLit = false;}
 
         SingleRecipeInput input = new SingleRecipeInput(ingredient);
@@ -219,23 +225,18 @@ public class LavaFurnaceBlockEntity extends BaseContainerBlockEntity {
             FEW POINTS TO NOTE:
 
             - BASICALLY THIS FURNACE HAS BIG LAVA STORAGE SPACE (5 BUCKETS IN TOTAL) SO 1000k TICKS IN TOTAL
-            - IF THIS STORAGE GET ABOVE THE 1000k LIMIT, REMAINING TICKS GO INTO AFTERBURNING, THESE TICKS ARE INDEPENDENT FROM LIT TIME TICKS
+            - IF THIS STORAGE GET ABOVE THE 1000k LIMIT, REMAINING TICKS GO INTO AFTERBURNING, THESE TICKS ARE INDEPENDENT OF LIT TIME TICKS
             - SPEED IS DETERMINED BY AMOUNT OF LAVA AS WELL OF AFTERBURNING AS WELL IF THE ITEM HAS NETHER ORIGIN (INCLUDING ANCIENT DEBRIS)
             - CONSUMPTION OF LAVA IS REDUCED BY HIGHER HEAT
 
-            TEXTURE HIERACHY:
-            1. UNLIT - WILL HAVE LOW PROFILE "LAVA"
-            2. LIT - WILL HAVE NOTABLE LAVA PROFILE
-            3. AFTERBURNER - WILL HAVE THE CRYING OBSIDIAN PROFILE
-
-
-            WOULD BE COOL IF IT WAS SIMILAR TO RESPAWN ANCHOR TOP TEXTURE ANIMATION BUT TAKES TIME
+            WOULD BE COOL IF IT WAS SIMILAR TO RESPAWN ANCHOR TOP TEXTURE ANIMATION BUT TAKES TIME,
+            A SORT OF RETEXTURE TO MORE MATCH RESPAWN ANCHOR
              */
 
             if (canStartSmelting(result, maxStackSize, burnResult) && hasFuel()) {
                 consumeFuel(inventory);
                 if (litTimeRemaining > 800000) {
-                    level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0f, 1.0f, false);
+                    level.playLocalSound(pos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0f, 1.0f, false); // Why doesn't it work?
                     afterburnTimeRemaining = (litTimeRemaining + 200000) - totalLitTime;
                 } else {litTimeRemaining += 200000;}
 
@@ -245,6 +246,7 @@ public class LavaFurnaceBlockEntity extends BaseContainerBlockEntity {
             else if (!isLit && !hasFuel()) {
                 resetProgress();
                 level.setBlockAndUpdate(pos, state.setValue(LIT, false));
+                level.setBlockAndUpdate(pos, state.setValue(AFTERBURNING, false));
             }
         }
     }
@@ -301,9 +303,8 @@ public class LavaFurnaceBlockEntity extends BaseContainerBlockEntity {
 
     private void increaseCraftingProgress(ItemStack ingredient) {
         ItemResource itemResource = ItemResource.of(ingredient);
-        int extraCapacity = 0;
-        int extraAfterburn = 0;
-        int extraNether = 0;
+        int progressIncrement = 0;
+
         List<ItemResource> netherOrigin = List.of(
             ItemResource.of(ANCIENT_DEBRIS),
             ItemResource.of(NETHER_QUARTZ_ORE),
@@ -316,22 +317,21 @@ public class LavaFurnaceBlockEntity extends BaseContainerBlockEntity {
         // This may be written better?
 
         if (litTimeRemaining > 800000) {
-            extraCapacity = 2;
+            progressIncrement += 2;
         } else if (litTimeRemaining > 500000) {
-            extraCapacity = 1;
+            progressIncrement += 1;
         }
 
         if (afterburnTimeRemaining > 0) {
-            extraAfterburn = 3;
+            progressIncrement += 3;
         }
 
         for (ItemResource item : netherOrigin) {
             if (item == itemResource) {
-                extraNether = 5;
+                progressIncrement += 5;
             }
         }
 
-        int progressIncrement = extraNether +  extraCapacity + extraAfterburn;
         System.out.println("Progress increment: " + progressIncrement);
         progress += 10 + progressIncrement;
     }
