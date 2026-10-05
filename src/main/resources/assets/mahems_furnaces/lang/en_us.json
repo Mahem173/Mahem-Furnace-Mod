@@ -8,10 +8,8 @@
 
   "container.forge_furnace": "Forge Furnace",
   "container.refined_furnace": "Refined Furnace",
+  "container.pressurised_furnace": "Pressurised Furnace",
   "container.lava_furnace": "Lava Furnace",
-
-
-
 
   "mahems_furnaces.configuration.title": "Furnace Mod Configs",
   "mahems_furnaces.configuration.section.mahems_furnaces.common.toml": "Furnace Mod Configs",
